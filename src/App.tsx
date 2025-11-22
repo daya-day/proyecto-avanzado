@@ -2,44 +2,8 @@ import './App.css'
 import './componentes/mazo'
 import CardDetail from './componentes/mazo'
 
-type Persona = {
-  nombre: string;
-  apellido: string;
-  edad: number;
-  cedula: string;
-  telefonos?: string[];
-}
 
-function App() {
-  
-  let persona1 : Persona = {
-    nombre: 'Pepe',
-    apellido: 'El Payaso',
-    edad: 20,
-    cedula: '123123123'
-  }
-
-  let persona2 : Persona = {
-    nombre: 'Jaimito',
-    apellido: ':p',
-    edad: 5,
-    cedula: 'XXXXXX'
-  }
-
-  let persona3 : Persona = {
-    nombre: 'Carlos',
-    apellido: 'Rodriguez',
-    edad: 45,
-    cedula: '2000124'
-  }
-
-  let familia: Persona[] = [persona1];
-  
-  familia.push(persona2);
-
-  familia.push(persona3);
-
-  console.log(familia);
+function App(){
 
   return (
     <div>
@@ -61,8 +25,11 @@ function App() {
         numero={1}
         tipo="electrico"
       />
+        
+      <button className='bg-indigo-400 hover:bg-amber-200 '>ola</button>
+    
     </div>
   )
-}
 
+}
 export default App
