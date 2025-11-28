@@ -1,7 +1,7 @@
 type props ={
     numero: number;
     nombre: string;
-    tipo: string;
+    tipo?: string;
     ataque: number;
     defensa: number;
     descripcion: string;
