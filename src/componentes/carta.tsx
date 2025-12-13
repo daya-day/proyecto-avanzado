@@ -1,16 +1,29 @@
 import React from 'react';
 import type { CartaProps } from './mazo.tsx';
 
-const Carta: React.FC<CartaProps> = ({
-  nombre,
-  descripcion,
-  ataque,
-  defensa,
-  vida,
-  imagenUrl,
+// Añadimos una nueva prop: onClick
+interface CartaComponentProps extends CartaProps {
+    onClick: () => void;
+}
+
+// Usamos el nuevo tipo en el componente
+const Carta: React.FC<CartaComponentProps> = ({ 
+    nombre, 
+    descripcion, 
+    ataque, 
+    defensa, 
+    vida, 
+    imagenUrl,
+    onClick // Recibimos la función de click
 }) => {
   return (
-    <div className="max-w-xs rounded-xl overflow-hidden shadow-2xl bg-gray-900 border border-red-700 transform hover:scale-105 transition duration-300 m-4">
+    // Hacemos que el div sea clickeable y tenga estilo de puntero
+    <div 
+      className="max-w-xs rounded-xl overflow-hidden shadow-2xl bg-gray-900 border border-red-700 transform hover:scale-105 transition duration-300 m-4 cursor-pointer"
+      onClick={onClick} // Añadimos el manejador de clic
+    >
+      
+      {/* ... (El resto del contenido de la carta sigue igual) ... */}
       
       {/* Encabezado e Imagen */}
       <div className="relative h-64">
@@ -33,19 +46,16 @@ const Carta: React.FC<CartaProps> = ({
 
         {/* Bloque de Estadísticas (Stats) */}
         <div className="flex justify-between text-center font-bold">
-          
           {/* Vida */}
           <div className="flex flex-col items-center bg-green-700 p-2 rounded-lg w-1/3 mr-1">
             <span className="text-xs uppercase">Vida</span>
             <span className="text-2xl">{vida}</span>
           </div>
-          
           {/* Ataque */}
           <div className="flex flex-col items-center bg-red-700 p-2 rounded-lg w-1/3 mx-0.5">
             <span className="text-xs uppercase">Ataque</span>
             <span className="text-2xl">{ataque}</span>
           </div>
-          
           {/* Defensa */}
           <div className="flex flex-col items-center bg-blue-700 p-2 rounded-lg w-1/3 ml-1">
             <span className="text-xs uppercase">Defensa</span>
