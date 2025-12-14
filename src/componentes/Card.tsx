@@ -3,7 +3,7 @@ export interface CardProps {
     id: string; 
     numero: number;
     nombre: string;
-    tipo?: string;
+    tipo: string;
     ataque: number;
     defensa: number;
     vida: number;

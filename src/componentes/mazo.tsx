@@ -1,85 +1,79 @@
 // src/componentes/mazo.tsx
 
-// src/componentes/mazo.tsx
-import type { CardProps } from "./Card";
+import React from 'react';
+import type { CardProps } from './Card'; // Asegúrate de que CardProps se importa desde tu archivo de tipos
 
-// Las props ahora incluyen la función para manejar el clic
+// La interfaz de la carta individual se extiende para incluir el manejador de clics
 interface CardDetailProps extends CardProps {
     onCardClick: (card: CardProps) => void;
 }
 
-function CardDetail({
-    ataque,
-    defensa,
-    vida,
-    descripcion,
-    imagen,
-    nombre,
-    numero,
-    tipo,
-    onCardClick,
-    ...cardData
-}: CardDetailProps) {
+const CardDetail: React.FC<CardDetailProps> = (props) => {
+    const { nombre, tipo, ataque, defensa, vida, imagen, numero, onCardClick, ...rest } = props;
 
-    // Objeto completo para pasar al modal
-    const card: CardProps = { ataque, defensa,vida, descripcion, imagen, nombre, numero, tipo, ...cardData };
+    // Función que devuelve la clase de color base para el borde y el shadow según el tipo
+    const getTipoColor = (cardTipo: string) => {
+        switch (cardTipo) {
+            case 'Psíquico': return 'border-purple-500 shadow-purple-900/50';
+            case 'Carnívoro': return 'border-red-500 shadow-red-900/50';
+            case 'Humano': return 'border-yellow-500 shadow-yellow-900/50';
+            case 'Mágico': return 'border-blue-500 shadow-blue-900/50';
+            default: return 'border-gray-500 shadow-gray-900/50';
+        }
+    };
+    
+    // Función para obtener el color de fondo sutil del área de encabezado según el tipo
+    const getTipoBg = (cardTipo: string) => {
+        switch (cardTipo) {
+            case 'Psíquico': return 'bg-purple-800/20';
+            case 'Carnívoro': return 'bg-red-800/20';
+            case 'Humano': return 'bg-yellow-800/20';
+            case 'Mágico': return 'bg-blue-800/20';
+            default: return 'bg-gray-800/20';
+        }
+    };
 
-    // Clases dinámicas para el color del borde y texto (Psíquico vs. Carnívoro)
-    const borderColor = tipo === 'Psíquico' ? 'border-purple-600' : 'border-red-600';
-    const textColor = tipo === 'Psíquico' ? 'text-purple-700' : 'text-red-700';
-    const statBgColor = tipo === 'Psíquico' ? 'bg-purple-100' : 'bg-red-100';
+    // Objeto completo de la carta para pasar al manejador de clics
+    const cardData: CardProps = { nombre, tipo, ataque, defensa, vida, imagen, numero, ...rest };
 
     return (
-        <div
-            // TAMAÑO REDUCIDO: w-64 (256px) h-[400px] 
-            className={`bg-white border-4 ${borderColor} rounded-xl overflow-hidden 
-                        transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/50 
-                        transition duration-300 w-64 h-[400px] flex flex-col cursor-pointer 
-                        shadow-lg`}
-            onClick={() => onCardClick(card)}
+        <div 
+            // Estilos generales de la carta y el hover
+            className={`w-40 md:w-56 h-auto bg-gray-900 text-white rounded-xl overflow-hidden cursor-pointer 
+                        transform hover:scale-105 transition duration-300 ease-in-out 
+                        border-4 ${getTipoColor(tipo)} shadow-2xl`}
+            // Al hacer clic, se llama a la función para abrir el modal de detalles
+            onClick={() => onCardClick(cardData)}
         >
-            <img
-                src={imagen}
-                alt={nombre}
-                // Imagen ligeramente más pequeña
-                className="w-full h-1/2 object-cover border-b-2 border-gray-200"
-            />
+            {/* Encabezado: Número y Tipo */}
+            <div className={`p-2 text-center text-sm font-semibold ${getTipoBg(tipo)}`}>
+                #{numero} - {tipo}
+            </div>
+            
+            {/* Imagen de la Carta */}
+            <div className="p-1">
+                <img 
+                    src={imagen} 
+                    alt={nombre} 
+                    className="w-full h-32 md:h-48 object-cover rounded-md border border-gray-700"
+                />
+            </div>
 
-            <div className="p-3 flex flex-col grow text-gray-900">
-                {/* Nombre y Número */}
-                <h3 className={`text-xl font-extrabold ${textColor} mb-1`}>
-                    {nombre} <span className="text-sm font-light text-gray-500">(#{numero})</span>
+            <div className="p-3">
+                {/* Nombre de la Carta */}
+                <h3 className="text-lg md:text-xl font-extrabold truncate text-red-400 mb-2">
+                    {nombre}
                 </h3>
-
-                {/* Tipo de Carta */}
-                <p className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start 
-                                ${tipo === 'Psíquico' ? 'bg-purple-600 text-white' : 'bg-red-600 text-white'} 
-                                mb-2 uppercase tracking-wider`}>
-                    {tipo}
-                </p>
-
-                {/* Breve Descripción */}
-                <p className="text-sm text-gray-600 mb-3 overflow-hidden line-clamp-2">
-                    {descripcion}
-                </p>
-
-                {/* Estadísticas (Fondo temático) */}
-                <div className={`mt-auto pt-2 border-t border-gray-200`}>
-                    <div className="flex justify-between text-sm font-bold">
-                        <span className={`px-2 py-1 rounded ${statBgColor} text-gray-800`}>
-                            ATAQUE: <span className="text-lg font-extrabold text-red-700">{ataque}</span>
-                        </span>
-                        <span className={`px-2 py-1 rounded ${statBgColor} text-gray-800`}>
-                            DEFENSA: <span className="text-lg font-extrabold text-blue-700">{defensa}</span>
-                        </span>
-                        <span className={`px-2 py-1 rounded ${statBgColor} text-gray-800`}>
-                            VIDA: <span className="text-lg font-extrabold text-blue-700">{defensa}</span>
-                        </span>
-                    </div>
+                
+                {/* Estadísticas (Ataque, Defensa, Vida) */}
+                <div className="flex justify-between text-xs md:text-sm font-medium">
+                    <span className="text-red-300">A: {ataque}</span>
+                    <span className="text-blue-300">D: {defensa}</span>
+                    <span className="text-green-300">V: {vida}</span>
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default CardDetail;

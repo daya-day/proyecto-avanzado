@@ -1,67 +1,104 @@
 // src/componentes/CardForm.tsx
 
-import React, { useState } from 'react';
-import type { CardProps } from './Card'; // Asegúrate de que la ruta sea correcta
+import React, { useState, useEffect } from 'react';
+import type { CardProps } from './Card'; 
 
-// Definimos el tipo de datos que se enviarán, omitiendo 'id' y 'numero' ya que se generan en App.tsx
-type NewCardData = Omit<CardProps, number>;
+// Tipos de datos para el formulario
+type NewCardData = Omit<CardProps, 'id' | 'numero'>; // Para Creación
+type EditCardData = CardProps; // Para Edición
 
+// Interfaz de propiedades del componente
 interface CardFormProps {
-    onCreate: (card: NewCardData) => void;
     onCancel: () => void;
+    
+    // Prop para controlar si estamos creando o editando
+    isEditing: boolean; 
+    
+    // Propiedades específicas del modo Creación
+    onCreate?: (card: NewCardData) => void;
+    
+    // Propiedades específicas del modo Edición
+    onUpdate?: (card: EditCardData) => void;
+    initialData?: CardProps; // Datos precargados en modo edición
 }
 
 const initialFormState: NewCardData = {
     nombre: '',
-    tipo: 'Psíquico', // Valor por defecto
+    tipo: 'Psíquico',
     ataque: 100,
     defensa: 100,
     descripcion: '',
     imagen: '',
     vida: 100,
-    id: '',
-    numero: 0
 };
 
-const CardForm: React.FC<CardFormProps> = ({ onCreate, onCancel }) => {
-    const [formData, setFormData] = useState<NewCardData>(initialFormState);
+const CardForm: React.FC<CardFormProps> = ({ 
+    onCreate, 
+    onUpdate, 
+    onCancel, 
+    isEditing, 
+    initialData 
+}) => {
+    
+    // El estado del formulario puede contener datos de CardProps o solo NewCardData
+    const [formData, setFormData] = useState<Omit<CardProps, 'id' | 'numero'> & Partial<Pick<CardProps, 'id' | 'numero'>>>(
+        isEditing && initialData 
+            ? initialData 
+            : initialFormState
+    );
+    
+    // Sincroniza los datos iniciales cuando el componente cambia entre modos o recibe nuevos datos
+    useEffect(() => {
+        if (isEditing && initialData) {
+            setFormData(initialData);
+        } else if (!isEditing) {
+            setFormData(initialFormState);
+        }
+    }, [isEditing, initialData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'number' ? parseInt(value, 10) || 0 : value, // Convertir a número si es necesario
+            // Convierte valores a número si el tipo es 'number'
+            [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
         }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Pequeña validación básica
         if (!formData.nombre || !formData.descripcion || !formData.imagen) {
             alert('Por favor, rellena todos los campos obligatorios (Nombre, Descripción, Imagen).');
             return;
         }
 
-        onCreate(formData); // Llama a la función de creación de App.tsx
+        if (isEditing && onUpdate) {
+            // MODO EDICIÓN: Llama a onUpdate (necesita todos los campos, incluido el ID)
+            onUpdate(formData as CardProps); 
+        } else if (!isEditing && onCreate) {
+            // MODO CREACIÓN: Llama a onCreate (excluye ID y número)
+            onCreate(formData as NewCardData);
+        }
     };
 
-    // Opciones para el tipo de carta
     const types = ['Psíquico', 'Carnívoro', 'Humano', 'Mágico', 'Otro'];
 
     return (
-        // Modal Overlay
+        // Modal Overlay 
         <div 
             className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
-            onClick={onCancel} // Cierra si hace clic en el fondo
+            onClick={onCancel}
         >
             {/* Contenido del Formulario */}
             <div 
                 className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-lg text-white border-4 border-red-500 relative"
-                onClick={(e) => e.stopPropagation()} // Evita que se cierre al hacer clic dentro
+                onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-3xl font-bold text-red-400 mb-6">Crear Nueva Carta</h2>
+                <h2 className="text-3xl font-bold text-red-400 mb-6">
+                    {isEditing ? `Editar Carta: ${initialData?.nombre}` : 'Crear Nueva Carta'} 
+                </h2>
                 
                 <button 
                     onClick={onCancel}
@@ -72,6 +109,19 @@ const CardForm: React.FC<CardFormProps> = ({ onCreate, onCancel }) => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     
+                    {/* Número de Carta (Solo visible y deshabilitado en edición) */}
+                    {isEditing && (
+                        <label className="block">
+                            <span className="text-gray-300 font-semibold">Número de Carta:</span>
+                            <input
+                                type="text"
+                                value={`#${formData.numero}`}
+                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
+                                disabled 
+                            />
+                        </label>
+                    )}
+
                     {/* Nombre */}
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Nombre:</span>
@@ -98,7 +148,7 @@ const CardForm: React.FC<CardFormProps> = ({ onCreate, onCancel }) => {
                             required
                         />
                     </label>
-
+                    
                     {/* Tipo (Select) */}
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Tipo de Carta:</span>
@@ -113,10 +163,10 @@ const CardForm: React.FC<CardFormProps> = ({ onCreate, onCancel }) => {
                             ))}
                         </select>
                     </label>
-
-                    {/* Estadísticas (Ataque y Defensa) */}
+                    
+                    {/* Estadísticas (Ataque, Defensa, Vida) */}
                     <div className="flex gap-4">
-                        <label className="block w-1/2">
+                        <label className="block w-1/3">
                             <span className="text-red-300 font-semibold">Ataque:</span>
                             <input
                                 type="number"
@@ -128,12 +178,24 @@ const CardForm: React.FC<CardFormProps> = ({ onCreate, onCancel }) => {
                                 max="999"
                             />
                         </label>
-                        <label className="block w-1/2">
+                        <label className="block w-1/3">
                             <span className="text-blue-300 font-semibold">Defensa:</span>
                             <input
                                 type="number"
                                 name="defensa"
                                 value={formData.defensa}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
+                                min="0"
+                                max="999"
+                            />
+                        </label>
+                         <label className="block w-1/3">
+                            <span className="text-green-300 font-semibold">Vida:</span>
+                            <input
+                                type="number"
+                                name="vida"
+                                value={formData.vida}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                                 min="0"
@@ -167,7 +229,7 @@ const CardForm: React.FC<CardFormProps> = ({ onCreate, onCancel }) => {
                             type="submit" 
                             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
                         >
-                            Crear Carta
+                            {isEditing ? 'Guardar Cambios' : 'Crear Carta'}
                         </button>
                     </div>
                 </form>

@@ -1,16 +1,16 @@
 // src/componentes/CardDetailsModal.tsx
 
 import React from 'react';
-import type { CardProps } from './Card';
+import type { CardProps } from './Card'; // Asegúrate de que CardProps se importa correctamente
 
 interface ModalProps {
     card: CardProps | null;
     onClose: () => void;
-    onDelete: (cardId: string) => void; // 👈 Nueva prop para eliminar
+    onDelete: (cardId: string) => void; 
+    onEdit: (card: CardProps) => void; // Propiedad para iniciar la edición
 }
 
-// ... (StatBox se mantiene igual)
-
+// Subcomponente para mostrar una estadística
 const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title: string, value: string | number, color?: string, large?: boolean }) => (
     <div className={`p-4 rounded-lg shadow-inner ${color}`}>
         <p className="text-sm font-light text-gray-300">{title}</p>
@@ -18,9 +18,10 @@ const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title
     </div>
 );
 
-const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete }) => { // 👈 Incluimos onDelete
+const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdit}) => { 
     if (!card) return null;
 
+    // Función para definir los colores del borde/fondo del modal según el tipo de carta
     const getTipoColor = (tipo: string | undefined) => {
         switch (tipo) {
             case 'Psíquico': return 'bg-purple-900 border-purple-500';
@@ -32,9 +33,14 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete }) => 
     // Función de confirmación para eliminar
     const handleDeleteClick = () => {
         if (window.confirm(`¿Estás seguro de que deseas eliminar la carta "${card.nombre}"?`)) {
-            onDelete(card.id); // Llama a la función de App.tsx con el ID de la carta
-            onClose(); // Cierra el modal
+            onDelete(card.id); 
+            onClose(); 
         }
+    }
+
+    // Función para iniciar la edición, cerrando el modal actual y cargando el formulario
+    const handleEditClick = () => {
+        onEdit(card); // Pasa la carta completa a App.tsx para precargar el formulario
     }
 
     return (
@@ -76,7 +82,7 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete }) => 
                             <StatBox title="Vida" value={card.vida} color="bg-green-600" />
                             <StatBox title="Ataque" value={card.ataque} color="bg-red-600" large />
                             <StatBox title="Defensa" value={card.defensa} color="bg-blue-600" large />
-                            {/* Dejé uno vacío para mantener el layout, si quieres que el grid sea 2x2, ajusta los StatBox */}
+                            {/* Espacio restante en el grid */}
                         </div>
 
                         {/* Descripción Completa */}
@@ -89,16 +95,23 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete }) => 
                             </p>
                         </div>
 
-                        {/* 🗑️ Botón de Eliminar */}
-                        <div className="pt-6">
+                        {/* 🗑️ Botones de Acción: Editar y Eliminar */}
+                        <div className="pt-6 flex gap-4">
+                            {/* ✏️ Botón de Edición (NUEVO) */}
+                            <button 
+                                onClick={handleEditClick}
+                                className="w-1/2 bg-blue-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-blue-700 transition duration-200 shadow-md"
+                            >
+                                ✏️ Editar Carta
+                            </button>
+                            {/* Botón de Eliminar */}
                             <button 
                                 onClick={handleDeleteClick}
-                                className="w-full bg-red-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-red-700 transition duration-200 shadow-md"
+                                className="w-1/2 bg-red-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-red-700 transition duration-200 shadow-md"
                             >
                                 🗑️ Eliminar Carta
                             </button>
                         </div>
-
                     </div>
                 </div>
             </div>
