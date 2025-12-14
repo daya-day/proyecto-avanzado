@@ -32,50 +32,39 @@ const initialCards: CardProps[] = [
 ];
 
 function App() {
-    // 1. Estado principal de la colección de cartas
     const [cards, setCards] = useState<CardProps[]>(initialCards);
-    // 2. Estado para el Modal de Detalle
     const [selectedCard, setSelectedCard] = useState<CardProps | null>(null);
-    // 3. Estado para mostrar/ocultar el Formulario de Creación
     const [showCreateForm, setShowCreateForm] = useState(false);
-    // 🆕 Estado de Edición: Almacena la carta que estamos editando
     const [editingCard, setEditingCard] = useState<CardProps | null>(null);
 
-
-    // Manejador para mostrar el Modal de Detalle
     const handleCardClick = (card: CardProps) => {
         setSelectedCard(card);
     };
 
-    // Manejador para cerrar el Modal de Detalle/Edición
     const handleCloseModal = () => {
         setSelectedCard(null);
-        setEditingCard(null); // Borra el estado de edición
-        setShowCreateForm(false); // Borra el estado de creación
+        setEditingCard(null); 
+        setShowCreateForm(false); 
     };
     
-    // ⚡️ Lógica para crear una nueva carta
     const handleCreateCard = (newCardData: Omit<CardProps, 'id' | 'numero'>) => {
         const newCard: CardProps = {
             ...newCardData,
             id: `c${Date.now()}`,
-            numero: cards.length + 1, // Asignar el siguiente número de carta
+            numero: cards.length + 1, 
         };
 
         setCards([...cards, newCard]);
         setShowCreateForm(false);
     };
-
-    // 🔄 Lógica para actualizar una carta existente
     const handleUpdateCard = (updatedData: CardProps) => {
         const updatedCards = cards.map(card => 
             card.id === updatedData.id ? updatedData : card
         );
         setCards(updatedCards);
-        setEditingCard(null); // Cierra el formulario de edición
+        setEditingCard(null); 
     };
 
-    // 🗑️ Lógica para eliminar una carta
     const handleDeleteCard = (cardId: string) => {
         const updatedCards = cards.filter(card => card.id !== cardId);
         setCards(updatedCards);
@@ -85,23 +74,20 @@ function App() {
         }
     };
 
-    // 📐 FUNCIÓN PARA INICIAR LA EDICIÓN desde el modal de detalle
     const handleStartEdit = (card: CardProps) => {
-        setEditingCard(card);    // Carga los datos de la carta al estado de edición
-        setSelectedCard(null); // Cierra el modal de detalle
+        setEditingCard(card);    
+        setSelectedCard(null); 
     };
 
 
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-900 to-black p-6">
             
-            {/* 🎯 TÍTULOS INICIALES */}
             <div className="text-center mb-10">
                 <h1 className="text-4xl font-bold text-white mb-2">Cartas de Stranger Things</h1>
                 <p className="text-red-400">Colecciona y juega con tus personajes favoritos</p>
             </div>
 
-            {/* Colección de Cartas */}
             <div className="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
                 {cards.map(card => (
                     <div key={card.id} className="transform hover:rotate-2 transition duration-300">
@@ -114,7 +100,6 @@ function App() {
             </div>
 
             <br />
-            {/* Botones de Acción */}
             <div className='flex flex-wrap justify-center gap-8 max-w-7xl mx-auto'>
                 <button 
                     onClick={() => setShowCreateForm(true)} 
@@ -125,7 +110,6 @@ function App() {
             
             </div>
 
-            {/* Formulario de Creación (Modal) */}
             {showCreateForm && (
                 <CardForm 
                     isEditing={false}
@@ -134,7 +118,6 @@ function App() {
                 />
             )}
 
-            {/* Formulario de Edición (Modal) */}
             {editingCard && (
                 <CardForm
                     isEditing={true}
@@ -144,7 +127,6 @@ function App() {
                 />
             )}
 
-            {/* Modal de Detalle */}
             <CardDetailsModal
                 card={selectedCard}
                 onClose={handleCloseModal}

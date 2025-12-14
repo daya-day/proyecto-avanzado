@@ -1,25 +1,18 @@
-// src/componentes/CardForm.tsx
-
 import React, { useState, useEffect } from 'react';
 import type { CardProps } from './Card'; 
 
-// Tipos de datos para el formulario
-type NewCardData = Omit<CardProps, 'id' | 'numero'>; // Para Creación
-type EditCardData = CardProps; // Para Edición
+type NewCardData = Omit<CardProps, 'id' | 'numero'>; 
+type EditCardData = CardProps; 
 
-// Interfaz de propiedades del componente
 interface CardFormProps {
     onCancel: () => void;
     
-    // Prop para controlar si estamos creando o editando
     isEditing: boolean; 
     
-    // Propiedades específicas del modo Creación
     onCreate?: (card: NewCardData) => void;
     
-    // Propiedades específicas del modo Edición
     onUpdate?: (card: EditCardData) => void;
-    initialData?: CardProps; // Datos precargados en modo edición
+    initialData?: CardProps; 
 }
 
 const initialFormState: NewCardData = {
@@ -40,14 +33,12 @@ const CardForm: React.FC<CardFormProps> = ({
     initialData 
 }) => {
     
-    // El estado del formulario puede contener datos de CardProps o solo NewCardData
     const [formData, setFormData] = useState<Omit<CardProps, 'id' | 'numero'> & Partial<Pick<CardProps, 'id' | 'numero'>>>(
         isEditing && initialData 
             ? initialData 
             : initialFormState
     );
     
-    // Sincroniza los datos iniciales cuando el componente cambia entre modos o recibe nuevos datos
     useEffect(() => {
         if (isEditing && initialData) {
             setFormData(initialData);
@@ -61,7 +52,6 @@ const CardForm: React.FC<CardFormProps> = ({
         
         setFormData(prev => ({
             ...prev,
-            // Convierte valores a número si el tipo es 'number'
             [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
         }));
     };
@@ -75,10 +65,8 @@ const CardForm: React.FC<CardFormProps> = ({
         }
 
         if (isEditing && onUpdate) {
-            // MODO EDICIÓN: Llama a onUpdate (necesita todos los campos, incluido el ID)
             onUpdate(formData as CardProps); 
         } else if (!isEditing && onCreate) {
-            // MODO CREACIÓN: Llama a onCreate (excluye ID y número)
             onCreate(formData as NewCardData);
         }
     };
@@ -86,12 +74,10 @@ const CardForm: React.FC<CardFormProps> = ({
     const types = ['Psíquico', 'Carnívoro', 'Humano', 'Mágico', 'Otro'];
 
     return (
-        // Modal Overlay 
         <div 
             className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
             onClick={onCancel}
         >
-            {/* Contenido del Formulario */}
             <div 
                 className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-lg text-white border-4 border-red-500 relative"
                 onClick={(e) => e.stopPropagation()}
@@ -109,7 +95,6 @@ const CardForm: React.FC<CardFormProps> = ({
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     
-                    {/* Número de Carta (Solo visible y deshabilitado en edición) */}
                     {isEditing && (
                         <label className="block">
                             <span className="text-gray-300 font-semibold">Número de Carta:</span>
@@ -122,7 +107,6 @@ const CardForm: React.FC<CardFormProps> = ({
                         </label>
                     )}
 
-                    {/* Nombre */}
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Nombre:</span>
                         <input
@@ -135,7 +119,6 @@ const CardForm: React.FC<CardFormProps> = ({
                         />
                     </label>
 
-                    {/* Imagen URL */}
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Imagen URL:</span>
                         <input
@@ -149,7 +132,6 @@ const CardForm: React.FC<CardFormProps> = ({
                         />
                     </label>
                     
-                    {/* Tipo (Select) */}
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Tipo de Carta:</span>
                         <select
@@ -164,7 +146,6 @@ const CardForm: React.FC<CardFormProps> = ({
                         </select>
                     </label>
                     
-                    {/* Estadísticas (Ataque, Defensa, Vida) */}
                     <div className="flex gap-4">
                         <label className="block w-1/3">
                             <span className="text-red-300 font-semibold">Ataque:</span>
@@ -204,7 +185,6 @@ const CardForm: React.FC<CardFormProps> = ({
                         </label>
                     </div>
 
-                    {/* Descripción */}
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Descripción:</span>
                         <textarea

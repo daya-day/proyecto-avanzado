@@ -1,9 +1,6 @@
-// src/componentes/mazo.tsx
-
 import React from 'react';
-import type { CardProps } from './Card';
+import type { CardProps } from './Card'; 
 
-// La interfaz de la carta individual se extiende para incluir el manejador de clics
 interface CardDetailProps extends CardProps {
     onCardClick: (card: CardProps) => void;
 }
@@ -11,7 +8,6 @@ interface CardDetailProps extends CardProps {
 const CardDetail: React.FC<CardDetailProps> = (props) => {
     const { nombre, tipo, ataque, defensa, vida, imagen, numero, onCardClick, ...rest } = props;
 
-    // Función que devuelve la clase de color base para el borde y el shadow según el tipo
     const getTipoColor = (cardTipo: string) => {
         switch (cardTipo) {
             case 'Psíquico': return 'border-purple-500 shadow-purple-900/50';
@@ -22,7 +18,6 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
         }
     };
     
-    // Función para obtener el color de fondo sutil del área de encabezado según el tipo
     const getTipoBg = (cardTipo: string) => {
         switch (cardTipo) {
             case 'Psíquico': return 'bg-purple-800/20';
@@ -33,24 +28,21 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
         }
     };
 
-    // Objeto completo de la carta para pasar al manejador de clics
     const cardData: CardProps = { nombre, tipo, ataque, defensa, vida, imagen, numero, ...rest };
 
     return (
         <div 
-            // Estilos generales de la carta y el hover
             className={`w-40 md:w-56 h-auto bg-gray-900 text-white rounded-xl overflow-hidden cursor-pointer 
                         transform hover:scale-105 transition duration-300 ease-in-out 
                         border-4 ${getTipoColor(tipo)} shadow-2xl`}
-            // Al hacer clic, se llama a la función para abrir el modal de detalles
             onClick={() => onCardClick(cardData)}
         >
-            {/* Encabezado: Número y Tipo */}
+           
             <div className={`p-2 text-center text-sm font-semibold ${getTipoBg(tipo)}`}>
                 #{numero} - {tipo}
             </div>
             
-            {/* Imagen de la Carta */}
+            
             <div className="p-1">
                 <img 
                     src={imagen} 
@@ -60,12 +52,11 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
             </div>
 
             <div className="p-3">
-                {/* Nombre de la Carta */}
+                
                 <h3 className="text-lg md:text-xl font-extrabold truncate text-red-400 mb-2">
                     {nombre}
                 </h3>
-                
-                {/* Estadísticas (Ataque, Defensa, Vida) */}
+            
                 <div className="flex justify-between text-xs md:text-sm font-medium">
                     <span className="text-red-300">A: {ataque}</span>
                     <span className="text-blue-300">D: {defensa}</span>
@@ -77,3 +68,4 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
 };
 
 export default CardDetail;
+
