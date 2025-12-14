@@ -5,7 +5,7 @@ import CardDetail from './componentes/mazo';
 import CardForm from './componentes/CardForm';
 import type { CardProps } from './componentes/Card';
 
-// Datos iniciales de la colección
+
 const initialCards: CardProps[] = [
     {
         id: 'c1',
