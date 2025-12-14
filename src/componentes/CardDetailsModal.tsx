@@ -1,12 +1,15 @@
+// src/componentes/CardDetailsModal.tsx
+
 import React from 'react';
 import type { CardProps } from './Card';
 
 interface ModalProps {
     card: CardProps | null;
     onClose: () => void;
-    onDelete: (cardId: string) => void;
-    onEdit: (card: CardProps) => void;
+    onDelete: (cardId: string) => void; // 👈 Nueva prop para eliminar
 }
+
+// ... (StatBox se mantiene igual)
 
 const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title: string, value: string | number, color?: string, large?: boolean }) => (
     <div className={`p-4 rounded-lg shadow-inner ${color}`}>
@@ -15,7 +18,7 @@ const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title
     </div>
 );
 
-const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdit }) => {
+const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete }) => { // 👈 Incluimos onDelete
     if (!card) return null;
 
     const getTipoColor = (tipo: string | undefined) => {
@@ -25,54 +28,58 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
             default: return 'bg-gray-800 border-gray-400';
         }
     }
-
+    
+    // Función de confirmación para eliminar
     const handleDeleteClick = () => {
         if (window.confirm(`¿Estás seguro de que deseas eliminar la carta "${card.nombre}"?`)) {
-            onDelete(card.id); 
-            onClose(); 
+            onDelete(card.id); // Llama a la función de App.tsx con el ID de la carta
+            onClose(); // Cierra el modal
         }
-    }
-
-    const handleEditClick = () => {
-        onEdit(card); 
     }
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
-
-            <div
+            
+            <div 
                 className={`w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl p-8 text-white ${getTipoColor(card.tipo)} border-8 overflow-y-auto relative`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <button
+                {/* Botón de Cerrar */}
+                <button 
                     onClick={onClose}
                     className="absolute top-4 right-4 text-3xl font-bold text-white hover:text-gray-300 transition z-10"
                 >
                     &times;
                 </button>
-
+                
                 <h2 className="text-4xl font-extrabold mb-6 border-b pb-2 text-yellow-300 uppercase">{card.nombre}</h2>
-
+                
+                {/* ESTRUCTURA DE DOS COLUMNAS */}
                 <div className="flex flex-col md:flex-row gap-8">
-
+                    
+                    {/* COLUMNA IZQUIERDA: IMAGEN GRANDE */}
                     <div className="md:w-1/3 flex justify-center items-start">
-                        <img
-                            src={card.imagen}
-                            alt={card.nombre}
+                        <img 
+                            src={card.imagen} 
+                            alt={card.nombre} 
                             className="w-full h-auto object-cover rounded-lg border-4 border-white shadow-xl"
                         />
                     </div>
-
+                    
+                    {/* COLUMNA DERECHA: INFORMACIÓN VERTICAL */}
                     <div className="md:w-2/3 space-y-4">
-
+                        
+                        {/* Estadísticas Clave */}
                         <div className="grid grid-cols-3 gap-4 text-lg">
                             <StatBox title="Nº" value={`#${card.numero}`} />
                             <StatBox title="Tipo" value={card.tipo || 'N/A'} color={card.tipo === 'Psíquico' ? 'bg-purple-700' : 'bg-red-700'} />
                             <StatBox title="Vida" value={card.vida} color="bg-green-600" />
                             <StatBox title="Ataque" value={card.ataque} color="bg-red-600" large />
                             <StatBox title="Defensa" value={card.defensa} color="bg-blue-600" large />
+                            {/* Dejé uno vacío para mantener el layout, si quieres que el grid sea 2x2, ajusta los StatBox */}
                         </div>
 
+                        {/* Descripción Completa */}
                         <div>
                             <h3 className="text-2xl font-bold mt-6 mb-2 border-t pt-4 border-gray-600">
                                 Descripción
@@ -82,20 +89,16 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                             </p>
                         </div>
 
-                        <div className="pt-6 flex gap-4">
-                            <button
-                                onClick={handleEditClick}
-                                className="w-1/2 bg-blue-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-blue-700 transition duration-200 shadow-md"
-                            >
-                                ✏️ Editar Carta
-                            </button>
-                            <button
+                        {/* 🗑️ Botón de Eliminar */}
+                        <div className="pt-6">
+                            <button 
                                 onClick={handleDeleteClick}
-                                className="w-1/2 bg-red-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-red-700 transition duration-200 shadow-md"
+                                className="w-full bg-red-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-red-700 transition duration-200 shadow-md"
                             >
                                 🗑️ Eliminar Carta
                             </button>
                         </div>
+
                     </div>
                 </div>
             </div>
