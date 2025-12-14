@@ -1,7 +1,7 @@
 // src/componentes/mazo.tsx
 
 import React from 'react';
-import type { CardProps } from './Card'; // Asegúrate de que CardProps se importa desde tu archivo de tipos
+import type { CardProps } from './Card';
 
 // La interfaz de la carta individual se extiende para incluir el manejador de clics
 interface CardDetailProps extends CardProps {
