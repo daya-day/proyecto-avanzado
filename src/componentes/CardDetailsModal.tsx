@@ -1,7 +1,8 @@
 // src/componentes/CardDetailsModal.tsx
 
 import React from 'react';
-import type { CardProps } from './card';
+import type { CardProps } from './Card';
+
 
 interface ModalProps {
     card: CardProps | null;
