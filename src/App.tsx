@@ -5,7 +5,7 @@ import './App.css';
 // Importamos la interfaz y los componentes necesarios
 import CardDetailsModal from './componentes/CardDetailsModal';
 import CardDetail from './componentes/mazo';
-import type { CardProps } from './componentes/card';
+import type { CardProps } from './componentes/Card';
 
 
 // Datos iniciales de la colección

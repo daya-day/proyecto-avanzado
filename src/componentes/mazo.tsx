@@ -1,7 +1,7 @@
 // src/componentes/mazo.tsx
 
-
-import type { CardProps } from './card';
+// src/componentes/mazo.tsx
+import type { CardProps } from "./Card";
 
 // Las props ahora incluyen la función para manejar el clic
 interface CardDetailProps extends CardProps {
