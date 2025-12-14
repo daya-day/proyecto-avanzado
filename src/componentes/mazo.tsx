@@ -11,6 +11,7 @@ interface CardDetailProps extends CardProps {
 function CardDetail({
     ataque,
     defensa,
+    vida,
     descripcion,
     imagen,
     nombre,
@@ -21,7 +22,7 @@ function CardDetail({
 }: CardDetailProps) {
 
     // Objeto completo para pasar al modal
-    const card: CardProps = { ataque, defensa, descripcion, imagen, nombre, numero, tipo, ...cardData };
+    const card: CardProps = { ataque, defensa,vida, descripcion, imagen, nombre, numero, tipo, ...cardData };
 
     // Clases dinámicas para el color del borde y texto (Psíquico vs. Carnívoro)
     const borderColor = tipo === 'Psíquico' ? 'border-purple-600' : 'border-red-600';
@@ -70,6 +71,9 @@ function CardDetail({
                         </span>
                         <span className={`px-2 py-1 rounded ${statBgColor} text-gray-800`}>
                             DEFENSA: <span className="text-lg font-extrabold text-blue-700">{defensa}</span>
+                        </span>
+                        <span className={`px-2 py-1 rounded ${statBgColor} text-gray-800`}>
+                            VIDA: <span className="text-lg font-extrabold text-blue-700">{defensa}</span>
                         </span>
                     </div>
                 </div>

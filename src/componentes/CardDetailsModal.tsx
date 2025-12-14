@@ -3,12 +3,13 @@
 import React from 'react';
 import type { CardProps } from './Card';
 
-
 interface ModalProps {
     card: CardProps | null;
-    
     onClose: () => void;
+    onDelete: (cardId: string) => void; // 👈 Nueva prop para eliminar
 }
+
+// ... (StatBox se mantiene igual)
 
 const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title: string, value: string | number, color?: string, large?: boolean }) => (
     <div className={`p-4 rounded-lg shadow-inner ${color}`}>
@@ -17,7 +18,7 @@ const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title
     </div>
 );
 
-const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose }) => {
+const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete }) => { // 👈 Incluimos onDelete
     if (!card) return null;
 
     const getTipoColor = (tipo: string | undefined) => {
@@ -28,6 +29,14 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose }) => {
         }
     }
     
+    // Función de confirmación para eliminar
+    const handleDeleteClick = () => {
+        if (window.confirm(`¿Estás seguro de que deseas eliminar la carta "${card.nombre}"?`)) {
+            onDelete(card.id); // Llama a la función de App.tsx con el ID de la carta
+            onClose(); // Cierra el modal
+        }
+    }
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
             
@@ -35,6 +44,7 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose }) => {
                 className={`w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl p-8 text-white ${getTipoColor(card.tipo)} border-8 overflow-y-auto relative`}
                 onClick={(e) => e.stopPropagation()}
             >
+                {/* Botón de Cerrar */}
                 <button 
                     onClick={onClose}
                     className="absolute top-4 right-4 text-3xl font-bold text-white hover:text-gray-300 transition z-10"
@@ -60,11 +70,13 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose }) => {
                     <div className="md:w-2/3 space-y-4">
                         
                         {/* Estadísticas Clave */}
-                        <div className="grid grid-cols-2 gap-4 text-lg">
+                        <div className="grid grid-cols-3 gap-4 text-lg">
                             <StatBox title="Nº" value={`#${card.numero}`} />
                             <StatBox title="Tipo" value={card.tipo || 'N/A'} color={card.tipo === 'Psíquico' ? 'bg-purple-700' : 'bg-red-700'} />
+                            <StatBox title="Vida" value={card.vida} color="bg-green-600" />
                             <StatBox title="Ataque" value={card.ataque} color="bg-red-600" large />
                             <StatBox title="Defensa" value={card.defensa} color="bg-blue-600" large />
+                            {/* Dejé uno vacío para mantener el layout, si quieres que el grid sea 2x2, ajusta los StatBox */}
                         </div>
 
                         {/* Descripción Completa */}
@@ -76,6 +88,17 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose }) => {
                                 {card.descripcion}
                             </p>
                         </div>
+
+                        {/* 🗑️ Botón de Eliminar */}
+                        <div className="pt-6">
+                            <button 
+                                onClick={handleDeleteClick}
+                                className="w-full bg-red-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-red-700 transition duration-200 shadow-md"
+                            >
+                                🗑️ Eliminar Carta
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import type { CardProps } from './Card'; // Asegúrate de que la ruta sea correcta
 
 // Definimos el tipo de datos que se enviarán, omitiendo 'id' y 'numero' ya que se generan en App.tsx
-type NewCardData = Omit<CardProps, number >
+type NewCardData = Omit<CardProps, number>;
 
 interface CardFormProps {
     onCreate: (card: NewCardData) => void;
@@ -18,6 +18,7 @@ const initialFormState: NewCardData = {
     defensa: 100,
     descripcion: '',
     imagen: '',
+    vida: 100,
     id: '',
     numero: 0
 };
