@@ -1,11 +1,11 @@
 export interface CardProps {
-    id: string; 
-    numero: number;
-    nombre: string;
+    idCard: string; 
+    number: number;
+    name: string;
     tipo: string;
-    ataque: number;
-    defensa: number;
-    vida: number;
-    descripcion: string;
-    imagen: string;
+    attack: number;
+    defense: number;
+    lifePoints: number;
+    description: string;
+    pictureUrl: string;
 }

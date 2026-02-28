@@ -6,7 +6,9 @@ interface CardDetailProps extends CardProps {
 }
 
 const CardDetail: React.FC<CardDetailProps> = (props) => {
-    const { nombre, tipo, ataque, defensa, vida, imagen, numero, onCardClick, ...rest } = props;
+    const { name, tipo, attack, defense, lifePoints, pictureUrl, number, onCardClick, ...rest } = props;
+    console.log(props);
+    
 
     const getTipoColor = (cardTipo: string) => {
         switch (cardTipo) {
@@ -28,7 +30,7 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
         }
     };
 
-    const cardData: CardProps = { nombre, tipo, ataque, defensa, vida, imagen, numero, ...rest };
+    const cardData: CardProps = { name, tipo, attack, defense, lifePoints, pictureUrl, number, ...rest };
 
     return (
         <div 
@@ -39,14 +41,14 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
         >
            
             <div className={`p-2 text-center text-sm font-semibold ${getTipoBg(tipo)}`}>
-                #{numero} - {tipo}
+                #{number} - {tipo}
             </div>
             
             
             <div className="p-1">
                 <img 
-                    src={imagen} 
-                    alt={nombre} 
+                    src={pictureUrl} 
+                    alt={name} 
                     className="w-full h-32 md:h-48 object-cover rounded-md border border-gray-700"
                 />
             </div>
@@ -54,13 +56,13 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
             <div className="p-3">
                 
                 <h3 className="text-lg md:text-xl font-extrabold truncate text-red-400 mb-2">
-                    {nombre}
+                    {name}
                 </h3>
             
                 <div className="flex justify-between text-xs md:text-sm font-medium">
-                    <span className="text-red-300">A: {ataque}</span>
-                    <span className="text-blue-300">D: {defensa}</span>
-                    <span className="text-green-300">V: {vida}</span>
+                    <span className="text-red-300">A: {attack}</span>
+                    <span className="text-blue-300">D: {defense}</span>
+                    <span className="text-green-300">V: {lifePoints}</span>
                 </div>
             </div>
         </div>

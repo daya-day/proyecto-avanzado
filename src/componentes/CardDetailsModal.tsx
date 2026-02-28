@@ -27,8 +27,8 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
     }
     
     const handleDeleteClick = () => {
-        if (window.confirm(`¿Estás seguro de que deseas eliminar la carta "${card.nombre}"?`)) {
-            onDelete(card.id); 
+        if (window.confirm(`¿Estás seguro de que deseas eliminar la carta "${card.name}"?`)) {
+            onDelete(card.idCard); 
             onClose(); 
         }
     }
@@ -53,15 +53,15 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                     &times;
                 </button>
                 
-                <h2 className="text-4xl font-extrabold mb-6 border-b pb-2 text-yellow-300 uppercase">{card.nombre}</h2>
+                <h2 className="text-4xl font-extrabold mb-6 border-b pb-2 text-yellow-300 uppercase">{card.name}</h2>
                 
                 
                 <div className="flex flex-col md:flex-row gap-8">
                 
                     <div className="md:w-1/3 flex justify-center items-start">
                         <img 
-                            src={card.imagen} 
-                            alt={card.nombre} 
+                            src={card.pictureUrl} 
+                            alt={card.name} 
                             className="w-full h-auto object-cover rounded-lg border-4 border-white shadow-xl"
                         />
                     </div>
@@ -69,11 +69,11 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                     <div className="md:w-2/3 space-y-4">
                         
                         <div className="grid grid-cols-3 gap-4 text-lg">
-                            <StatBox title="Nº" value={`#${card.numero}`} />
+                            <StatBox title="Nº" value={`#${card.number}`} />
                             <StatBox title="Tipo" value={card.tipo || 'N/A'} color={card.tipo === 'Psíquico' ? 'bg-purple-700' : 'bg-red-700'} />
-                            <StatBox title="Vida" value={card.vida} color="bg-green-600" />
-                            <StatBox title="Ataque" value={card.ataque} color="bg-red-600" large />
-                            <StatBox title="Defensa" value={card.defensa} color="bg-blue-600" large />
+                            <StatBox title="Vida" value={card.lifePoints} color="bg-green-600" />
+                            <StatBox title="Ataque" value={card.attack} color="bg-red-600" large />
+                            <StatBox title="Defensa" value={card.defense} color="bg-blue-600" large />
 
                         </div>
 
@@ -82,7 +82,7 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                                 Descripción
                             </h3>
                             <p className="text-base leading-relaxed italic text-gray-200">
-                                {card.descripcion}
+                                {card.description}
                             </p>
                         </div>
 
