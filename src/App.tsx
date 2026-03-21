@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import type { CardProps } from './componentes/Card';
 import { Route, Routes } from 'react-router';
@@ -33,11 +33,33 @@ const initialCards: CardProps[] = [
 function App() {
     const [cards, setCards] = useState<CardProps[]>(initialCards);
 
+    const getCartas = async () =>{
+        let urlAPI = 'https://educapi-v2.onrender.com/card';
+
+        const respuesta = await fetch(urlAPI, {
+            method: 'GET',
+            headers:{
+                usersecretpasskey: 'Daya646842NA',
+            },
+        });
+
+        const objeto = await respuesta.json();
+        setCards (objeto.data)
+
+        console.log(objeto.data);
+    };
+
+    useEffect(() => {
+    getCartas();
+  }, []);
+    
+
     return (
         <Routes>
             <Route path="/" element={< AppV2 cards={cards} setCards={setCards} />} />
 
         </Routes>
+
     )
 }
 

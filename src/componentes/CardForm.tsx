@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import type { CardProps } from './Card'; 
+import type { CardProps } from './Card';
 
-type NewCardData = Omit<CardProps, 'id' | 'numero'>; 
-type EditCardData = CardProps; 
+type NewCardData = Omit<CardProps, 'id' | 'numero'>;
+type EditCardData = CardProps;
 
 interface CardFormProps {
     onCancel: () => void;
-    
-    isEditing: boolean; 
-    
+
+    isEditing: boolean;
+
     onCreate?: (card: NewCardData) => void;
-    
+
     onUpdate?: (card: EditCardData) => void;
-    initialData?: CardProps; 
+    initialData?: CardProps;
 }
 
 const initialFormState: NewCardData = {
@@ -25,22 +25,24 @@ const initialFormState: NewCardData = {
     lifePoints: 100,
     number: 0,
     idCard: ''
+
+
 };
 
-const CardForm: React.FC<CardFormProps> = ({ 
-    onCreate, 
-    onUpdate, 
-    onCancel, 
-    isEditing, 
-    initialData 
+const CardForm: React.FC<CardFormProps> = ({
+    onCreate,
+    onUpdate,
+    onCancel,
+    isEditing,
+    initialData
 }) => {
-    
+
     const [formData, setFormData] = useState<Omit<CardProps, 'id' | 'numero'> & Partial<Pick<CardProps, 'idCard' | 'number'>>>(
-        isEditing && initialData 
-            ? initialData 
+        isEditing && initialData
+            ? initialData
             : initialFormState
     );
-    
+
     useEffect(() => {
         if (isEditing && initialData) {
             setFormData(initialData);
@@ -51,44 +53,83 @@ const CardForm: React.FC<CardFormProps> = ({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        
+
         setFormData(prev => ({
             ...prev,
             [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (!formData.name || !formData.description || !formData.pictureUrl) {
-            alert('Por favor, rellena todos los campos obligatorios (Nombre, Descripción, Imagen).');
-            return;
-        }
 
-        if (isEditing && onUpdate) {
-            onUpdate(formData as CardProps); 
-        } else if (!isEditing && onCreate) {
-            onCreate(formData as NewCardData);
-        }
+        // if (!formData.name || !formData.description || !formData.pictureUrl) {
+        //     alert('Por favor, rellena todos los campos obligatorios (Nombre, Descripción, Imagen).');
+        //     return;
+        // }
+
+        // if (isEditing && onUpdate) {
+        //     onUpdate(formData as CardProps);
+        // } else if (!isEditing && onCreate) {
+        //     onCreate(formData as NewCardData);
+        //     let urlAPI = 'https://educapi-v2.onrender.com/card';
+
+        //     const respuesta = await fetch(urlAPI, {
+        //         method: 'POST',
+        //         headers: {
+        //             usersecretpasskey: 'Daya646842NA',
+        //             'content-type' : 'application/json',
+        //         },
+        //         body: JSON.stringify({
+        //             name: "Nueva Carta",
+        //             description: "Descripción opcional",
+        //             attack: 2000,
+        //             defense: 1500,
+        //             lifePoints: 2500,
+        //             pictureUrl: "https://example.com/image.jpg",
+        //             attributes: { "tipo": "Mago" }
+        //         })
+        //     });
+        //     console.log(respuesta);
+        // }
+
+        let urlAPI = 'https://educapi-v2.onrender.com/card';
+
+        const respuesta = await fetch(urlAPI, {
+            method: 'POST',
+            headers: {
+                usersecretpasskey: 'Daya646842NA',
+                'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: "Nueva Carta",
+                description: "Descripción opcional",
+                attack: 2000,
+                defense: 1500,
+                lifePoints: 2500,
+                pictureUrl: "https://example.com/image.jpg",
+                attributes: { "tipo": "Mago" }
+            })
+        });
+        console.log(respuesta);
     };
 
     const types = ['Psíquico', 'Carnívoro', 'Humano', 'Mágico', 'Otro'];
 
     return (
-        <div 
+        <div
             className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
             onClick={onCancel}
         >
-            <div 
+            <div
                 className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-lg text-white border-4 border-red-500 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-3xl font-bold text-red-400 mb-6">
-                    {isEditing ? `Editar Carta: ${initialData?.name}` : 'Crear Nueva Carta'} 
+                    {isEditing ? `Editar Carta: ${initialData?.name}` : 'Crear Nueva Carta'}
                 </h2>
-                
-                <button 
+
+                <button
                     onClick={onCancel}
                     className="absolute top-4 right-4 text-3xl font-bold text-white hover:text-red-300 transition"
                 >
@@ -96,7 +137,7 @@ const CardForm: React.FC<CardFormProps> = ({
                 </button>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    
+
                     {isEditing && (
                         <label className="block">
                             <span className="text-gray-300 font-semibold">Número de Carta:</span>
@@ -104,7 +145,7 @@ const CardForm: React.FC<CardFormProps> = ({
                                 type="text"
                                 value={`#${formData.number}`}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
-                                disabled 
+                                disabled
                             />
                         </label>
                     )}
@@ -117,7 +158,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             value={formData.name}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
-                            required
+
                         />
                     </label>
 
@@ -130,10 +171,10 @@ const CardForm: React.FC<CardFormProps> = ({
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                             placeholder="Ej: https://via.placeholder.com/300"
-                            required
+
                         />
                     </label>
-                    
+
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Tipo de Carta:</span>
                         <select
@@ -147,7 +188,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             ))}
                         </select>
                     </label>
-                    
+
                     <div className="flex gap-4">
                         <label className="block w-1/3">
                             <span className="text-red-300 font-semibold">Ataque:</span>
@@ -173,7 +214,7 @@ const CardForm: React.FC<CardFormProps> = ({
                                 max="999"
                             />
                         </label>
-                         <label className="block w-1/3">
+                        <label className="block w-1/3">
                             <span className="text-green-300 font-semibold">Vida:</span>
                             <input
                                 type="number"
@@ -195,20 +236,21 @@ const CardForm: React.FC<CardFormProps> = ({
                             onChange={handleChange}
                             rows={3}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
-                            required
+
                         ></textarea>
                     </label>
 
                     <div className="flex justify-end gap-3 pt-4">
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             onClick={onCancel}
                             className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition duration-200"
                         >
                             Cancelar
                         </button>
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
+                            onSubmit={handleSubmit}
                             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
                         >
                             {isEditing ? 'Guardar Cambios' : 'Crear Carta'}
