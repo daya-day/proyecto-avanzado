@@ -16,13 +16,15 @@ interface CardFormProps {
 }
 
 const initialFormState: NewCardData = {
-    nombre: '',
+    name: '',
     tipo: 'Psíquico',
-    ataque: 100,
-    defensa: 100,
-    descripcion: '',
-    imagen: '',
-    vida: 100,
+    attack: 100,
+    defense: 100,
+    description: '',
+    pictureUrl: '',
+    lifePoints: 100,
+    number: 0,
+    idCard: ''
 };
 
 const CardForm: React.FC<CardFormProps> = ({ 
@@ -33,7 +35,7 @@ const CardForm: React.FC<CardFormProps> = ({
     initialData 
 }) => {
     
-    const [formData, setFormData] = useState<Omit<CardProps, 'id' | 'numero'> & Partial<Pick<CardProps, 'id' | 'numero'>>>(
+    const [formData, setFormData] = useState<Omit<CardProps, 'id' | 'numero'> & Partial<Pick<CardProps, 'idCard' | 'number'>>>(
         isEditing && initialData 
             ? initialData 
             : initialFormState
@@ -59,7 +61,7 @@ const CardForm: React.FC<CardFormProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!formData.nombre || !formData.descripcion || !formData.imagen) {
+        if (!formData.name || !formData.description || !formData.pictureUrl) {
             alert('Por favor, rellena todos los campos obligatorios (Nombre, Descripción, Imagen).');
             return;
         }
@@ -83,7 +85,7 @@ const CardForm: React.FC<CardFormProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-3xl font-bold text-red-400 mb-6">
-                    {isEditing ? `Editar Carta: ${initialData?.nombre}` : 'Crear Nueva Carta'} 
+                    {isEditing ? `Editar Carta: ${initialData?.name}` : 'Crear Nueva Carta'} 
                 </h2>
                 
                 <button 
@@ -100,7 +102,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <span className="text-gray-300 font-semibold">Número de Carta:</span>
                             <input
                                 type="text"
-                                value={`#${formData.numero}`}
+                                value={`#${formData.number}`}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
                                 disabled 
                             />
@@ -112,7 +114,7 @@ const CardForm: React.FC<CardFormProps> = ({
                         <input
                             type="text"
                             name="nombre"
-                            value={formData.nombre}
+                            value={formData.name}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                             required
@@ -124,7 +126,7 @@ const CardForm: React.FC<CardFormProps> = ({
                         <input
                             type="url"
                             name="imagen"
-                            value={formData.imagen}
+                            value={formData.pictureUrl}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                             placeholder="Ej: https://via.placeholder.com/300"
@@ -152,7 +154,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <input
                                 type="number"
                                 name="ataque"
-                                value={formData.ataque}
+                                value={formData.attack}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                                 min="0"
@@ -164,7 +166,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <input
                                 type="number"
                                 name="defensa"
-                                value={formData.defensa}
+                                value={formData.defense}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                                 min="0"
@@ -176,7 +178,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <input
                                 type="number"
                                 name="vida"
-                                value={formData.vida}
+                                value={formData.lifePoints}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"
                                 min="0"
@@ -189,7 +191,7 @@ const CardForm: React.FC<CardFormProps> = ({
                         <span className="text-gray-300 font-semibold">Descripción:</span>
                         <textarea
                             name="descripcion"
-                            value={formData.descripcion}
+                            value={formData.description}
                             onChange={handleChange}
                             rows={3}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50"

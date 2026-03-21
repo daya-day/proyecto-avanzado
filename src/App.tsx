@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import './App.css';
-import CardDetailsModal from './componentes/CardDetailsModal';
-import CardDetail from './componentes/mazo';
-import CardForm from './componentes/CardForm'; 
 import type { CardProps } from './componentes/Card';
+import { Route, Routes } from 'react-router';
+import AppV2 from './componentes/AppV2';
 
 
 const initialCards: CardProps[] = [
@@ -26,116 +25,19 @@ const initialCards: CardProps[] = [
         description: 'Criatura depredadora originaria del Upside Down, caracterizada por su apariencia humanoide sin rostro y su capacidad para viajar entre dimensiones.',
         pictureUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgK_PhrvIxq6EYhWZHKEp_0QYAK2D5ktlZwA&s',
         number: 2,
-        lifePoints:200,
+        lifePoints: 200,
         tipo: 'Carnívoro',
     },
 ];
 
 function App() {
     const [cards, setCards] = useState<CardProps[]>(initialCards);
-    const [selectedCard, setSelectedCard] = useState<CardProps | null>(null);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [editingCard, setEditingCard] = useState<CardProps | null>(null);
-
-    const handleCardClick = (card: CardProps) => {
-        setSelectedCard(card);
-    };
-
-    
-    const handleCloseModal = () => {
-        setSelectedCard(null);
-        setEditingCard(null); 
-        setShowCreateForm(false); 
-    };
-    
-    const handleCreateCard = (newCardData: Omit<CardProps, 'id' | 'numero'>) => {
-        const newCard: CardProps = {
-            ...newCardData,
-            idCard: `c${Date.now()}`,
-            number: cards.length + 1, 
-        };
-
-        setCards([...cards, newCard]);
-        setShowCreateForm(false);
-    };
-    const handleUpdateCard = (updatedData: CardProps) => {
-        const updatedCards = cards.map(card => 
-            card.idCard === updatedData.idCard ? updatedData : card
-        );
-        setCards(updatedCards);
-        setEditingCard(null); 
-    };
-
-    const handleDeleteCard = (cardId: string) => {
-        const updatedCards = cards.filter(card => card.idCard !== cardId);
-        setCards(updatedCards);
-
-        if (selectedCard && selectedCard.idCard === cardId) {
-            setSelectedCard(null);
-        }
-    };
-
-    const handleStartEdit = (card: CardProps) => {
-        setEditingCard(card);    
-        setSelectedCard(null); 
-    };
-
 
     return (
-        
-        <div className="min-h-screen bg-linear-to-br from-gray-900 to-black p-6">
-            
-            <div className="text-center mb-10">
-                <h1 className="text-4xl font-bold text-white mb-2">Cartas de Stranger Things</h1>
-                <p className="text-red-400">Colecciona y juega con tus personajes favoritos</p>
-            </div>
+        <Routes>
+            <Route path="/" element={< AppV2 cards={cards} setCards={setCards} />} />
 
-            <div className="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
-                {cards.map(card => (
-                    <div key={card.idCard} className="transform hover:rotate-2 transition duration-300">
-                        <CardDetail
-                            {...card}
-                            onCardClick={handleCardClick}
-                        />
-                    </div>
-                ))}
-            </div>
-
-            <br />
-            <div className='flex flex-wrap justify-center gap-8 max-w-7xl mx-auto'>
-                <button 
-                    onClick={() => setShowCreateForm(true)} 
-                    className="h-10 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
-                >
-                    Crear Carta
-                </button>
-            
-            </div>
-
-            {showCreateForm && (
-                <CardForm 
-                    isEditing={false}
-                    onCreate={handleCreateCard} 
-                    onCancel={handleCloseModal} 
-                />
-            )}
-
-            {editingCard && (
-                <CardForm
-                    isEditing={true}
-                    initialData={editingCard}
-                    onUpdate={handleUpdateCard}
-                    onCancel={handleCloseModal}
-                />
-            )}
-
-            <CardDetailsModal
-                card={selectedCard}
-                onClose={handleCloseModal}
-                onDelete={handleDeleteCard}
-                onEdit={handleStartEdit}
-            />
-        </div>
+        </Routes>
     )
 }
 

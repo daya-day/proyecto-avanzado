@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 import type { CardProps } from './Card'; 
 
 interface CardDetailProps extends CardProps {
