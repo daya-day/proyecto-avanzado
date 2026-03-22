@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import type { CardProps } from './componentes/Card';
-import { Route, Routes } from 'react-router';
+import { Route, Routes } from "react-router";
 import AppV2 from './componentes/AppV2';
 
 
