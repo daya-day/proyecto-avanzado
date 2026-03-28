@@ -33,26 +33,26 @@ const initialCards: CardProps[] = [
 function App() {
     const [cards, setCards] = useState<CardProps[]>(initialCards);
 
-    const getCartas = async () =>{
+    const getCartas = async () => {
         let urlAPI = 'https://educapi-v2.onrender.com/card';
 
         const respuesta = await fetch(urlAPI, {
             method: 'GET',
-            headers:{
+            headers: {
                 usersecretpasskey: 'Daya646842NA',
             },
         });
 
         const objeto = await respuesta.json();
-        setCards (objeto.data)
+        setCards(objeto.data)
 
         console.log(objeto.data);
     };
 
     useEffect(() => {
-    getCartas();
-  }, []);
-    
+        getCartas();
+    }, []);
+
 
     return (
         <Routes>

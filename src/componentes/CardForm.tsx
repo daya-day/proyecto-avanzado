@@ -30,7 +30,7 @@ const CardForm: React.FC<CardFormProps> = ({
     isEditing,
     initialData
 }) => {
-    
+
     const [formData, setFormData] = useState<any>(initialFormState);
 
     useEffect(() => {
@@ -46,7 +46,7 @@ const CardForm: React.FC<CardFormProps> = ({
 
         setFormData((prev: any) => ({
             ...prev,
-            
+
             [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
         }));
     };
@@ -65,28 +65,62 @@ const CardForm: React.FC<CardFormProps> = ({
             onCreate(formData as NewCardData);
         }
 
-        let urlAPI = 'https://educapi-v2.onrender.com/card';
+        if (isEditing) {
+            alert('Editando');
 
-        const respuesta = await fetch(urlAPI, {
-            method: 'POST',
-            headers: {
-            usersecretpasskey: 'Daya646842NA',
-            'content-type': 'application/json',
-},
+            let urlAPI = `https://educapi-v2.onrender.com/card/${initialData!.idCard}`;
 
-            body: JSON.stringify({
-                name: "Eleven",
-                description: "Descripción opcional",
-                attack: 2000,
-                defense: 1500,
-                lifePoints: 2500,
-                pictureUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO7WUFGtnHlkz29L5vLQoCX48wCKHsJ8fzaQ&s",
-                 attributes: { "tipo": "Mago" }
-            })
+            const respuesta = await fetch(urlAPI, {
+                method: 'PATCH',
+                headers: {
+                    usersecretpasskey: 'Daya646842NA',
+                    'content-type': 'application/json',
+                },
 
-});
+                body: JSON.stringify({
+                    name: formData.name,
+                    description: formData.description,
+                    attack: formData.attack,
+                    defense: formData.defense,
+                    lifePoints: formData.lifePoints,
+                    pictureUrl: formData.pictureUrl,
+                    tipo: formData.tipo
+                })
 
-        console.log(respuesta);
+            });
+
+            console.log(respuesta);
+
+        }
+        else {
+
+            let urlAPI = 'https://educapi-v2.onrender.com/card';
+
+            const respuesta = await fetch(urlAPI, {
+                method: 'POST',
+                headers: {
+                    usersecretpasskey: 'Daya646842NA',
+                    'content-type': 'application/json',
+                },
+
+                body: JSON.stringify({
+                    name: formData.name,
+                    description: formData.description,
+                    attack: formData.attack,
+                    defense: formData.defense,
+                    lifePoints: formData.lifePoints,
+                    pictureUrl: formData.pictureUrl,
+                    tipo: formData.tipo
+                })
+
+            });
+
+            console.log(respuesta);
+        }
+
+
+
+
 
     };
 
@@ -103,7 +137,7 @@ const CardForm: React.FC<CardFormProps> = ({
                         <span className="text-gray-300 font-semibold">Nombre:</span>
                         <input
                             type="text"
-                            name="name" 
+                            name="name"
                             value={formData.name}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
@@ -114,7 +148,7 @@ const CardForm: React.FC<CardFormProps> = ({
                         <span className="text-gray-300 font-semibold">Imagen URL:</span>
                         <input
                             type="url"
-                            name="pictureUrl" 
+                            name="pictureUrl"
                             value={formData.pictureUrl}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
@@ -126,7 +160,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <span className="text-red-300 font-semibold">Ataque:</span>
                             <input
                                 type="number"
-                                name="attack" 
+                                name="attack"
                                 value={formData.attack}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
@@ -136,7 +170,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <span className="text-blue-300 font-semibold">Defensa:</span>
                             <input
                                 type="number"
-                                name="defense" 
+                                name="defense"
                                 value={formData.defense}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
@@ -146,7 +180,7 @@ const CardForm: React.FC<CardFormProps> = ({
                             <span className="text-green-300 font-semibold">Vida:</span>
                             <input
                                 type="number"
-                                name="lifePoints" 
+                                name="lifePoints"
                                 value={formData.lifePoints}
                                 onChange={handleChange}
                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
@@ -157,7 +191,7 @@ const CardForm: React.FC<CardFormProps> = ({
                     <label className="block">
                         <span className="text-gray-300 font-semibold">Descripción:</span>
                         <textarea
-                            name="description" 
+                            name="description"
                             value={formData.description}
                             onChange={handleChange}
                             rows={3}

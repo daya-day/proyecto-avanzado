@@ -45,13 +45,30 @@ function AppV2({ cards, setCards }: Props) {
         setEditingCard(null);
     };
 
-    const handleDeleteCard = (cardId: string) => {
-        const updatedCards = cards.filter(card => card.idCard !== cardId);
-        setCards(updatedCards);
+    const handleDeleteCard = async (cardId: string) => {
 
-        if (selectedCard && selectedCard.idCard === cardId) {
-            setSelectedCard(null);
+        let urlAPI = `https://educapi-v2.onrender.com/card/${cardId}`;
+
+        const respuesta = await fetch(urlAPI, {
+            method: 'DELETE',
+            headers: {
+                usersecretpasskey: 'Daya646842NA',
+            },
+
+        });
+
+        if (respuesta.status === 200) {
+            
+            // En lugar de llamar al servidor, quitamos el ID eliminado del estado local
+            setCards((prevCartas: any[]) => prevCartas.filter(carta => carta.id !== cardId));
         }
+
+        //const updatedCards = cards.filter(card => card.idCard !== cardId);
+        //setCards(updatedCards);
+
+        //if (selectedCard && selectedCard.idCard === cardId) {
+        //    setSelectedCard(null);
+        //}
     };
 
     const handleStartEdit = (card: CardProps) => {
