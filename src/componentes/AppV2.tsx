@@ -58,9 +58,8 @@ function AppV2({ cards, setCards }: Props) {
         });
 
         if (respuesta.status === 200) {
-            
-            // En lugar de llamar al servidor, quitamos el ID eliminado del estado local
             setCards((prevCartas: any[]) => prevCartas.filter(carta => carta.id !== cardId));
+            
         }
 
         //const updatedCards = cards.filter(card => card.idCard !== cardId);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { CardProps } from './Card';
+import { useNavigate } from 'react-router';
 
 type NewCardData = Omit<CardProps, 'id' | 'numero'>;
 
@@ -30,6 +31,8 @@ const CardForm: React.FC<CardFormProps> = ({
     isEditing,
     initialData
 }) => {
+
+    const navigate = useNavigate()
 
     const [formData, setFormData] = useState<any>(initialFormState);
 
@@ -66,7 +69,6 @@ const CardForm: React.FC<CardFormProps> = ({
         }
 
         if (isEditing) {
-            alert('Editando');
 
             let urlAPI = `https://educapi-v2.onrender.com/card/${initialData!.idCard}`;
 
@@ -118,9 +120,7 @@ const CardForm: React.FC<CardFormProps> = ({
             console.log(respuesta);
         }
 
-
-
-
+        navigate('/');
 
     };
 

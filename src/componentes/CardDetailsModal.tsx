@@ -1,6 +1,5 @@
 import React from 'react';
 import type { CardProps } from './Card'; 
-
 interface ModalProps {
     card: CardProps | null;
     onClose: () => void;
