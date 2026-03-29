@@ -54,12 +54,21 @@ function App() {
     }, []);
 
 
+
     return (
         <Routes>
-            <Route path="/" element={< AppV2 cards={cards} setCards={setCards} />} />
-
+            <Route path="/" element={<AppV2 cards={cards} setCards={setCards} />} />
+            <Route path="*" element={
+                <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
+                    <h1 className="text-9xl font-bold text-red-600">404</h1>
+                    <p className="text-2xl mt-4">Has entrado al Upside Down...</p>
+                    <p className="text-gray-400 mb-8">Esta página no existe en nuestra dimensión.</p>
+                    <a href="/" className="bg-red-600 px-6 py-2 rounded-lg hover:bg-red-700 transition">
+                        Volver a Hawkins
+                    </a>
+                </div>
+            } />
         </Routes>
-
     )
 }
 

@@ -57,17 +57,14 @@ function AppV2({ cards, setCards }: Props) {
 
         });
 
-        if (respuesta.status === 200) {
-            setCards((prevCartas: any[]) => prevCartas.filter(carta => carta.id !== cardId));
-            
+        if (respuesta.ok) {
+            setCards((prevCartas: CardProps[]) => 
+                prevCartas.filter(carta => carta.idCard !== cardId)
+            );
+            handleCloseModal();
+        } else {
+            console.error("Error al eliminar la carta en el servidor");
         }
-
-        //const updatedCards = cards.filter(card => card.idCard !== cardId);
-        //setCards(updatedCards);
-
-        //if (selectedCard && selectedCard.idCard === cardId) {
-        //    setSelectedCard(null);
-        //}
     };
 
     const handleStartEdit = (card: CardProps) => {
