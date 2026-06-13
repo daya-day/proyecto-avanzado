@@ -199,6 +199,8 @@ const CardForm: React.FC<CardFormProps> = ({
                         ></textarea>
                     </label>
 
+                    
+
                     <div className="flex justify-end gap-3 pt-4">
                         <button type="button" onClick={onCancel} className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700">
                             Cancelar

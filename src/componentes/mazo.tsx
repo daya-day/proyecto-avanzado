@@ -6,7 +6,7 @@ interface CardDetailProps extends CardProps {
 }
 
 const CardDetail: React.FC<CardDetailProps> = (props) => {
-    const { name, tipo, attack, defense, lifePoints, pictureUrl, number, onCardClick, ...rest } = props;
+    const { idCard, name, tipo, attack, defense, lifePoints, pictureUrl, number, onCardClick, ...rest } = props;
     console.log(props);
     
 
@@ -30,7 +30,7 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
         }
     };
 
-    const cardData: CardProps = { name, tipo, attack, defense, lifePoints, pictureUrl, number, ...rest };
+    const cardData: CardProps = { idCard, name, tipo, attack, defense, lifePoints, pictureUrl, number, ...rest };
 
     return (
         <div 
@@ -63,6 +63,8 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
                     <span className="text-red-300">A: {attack}</span>
                     <span className="text-blue-300">D: {defense}</span>
                     <span className="text-green-300">V: {lifePoints}</span>
+                    <span className="text-green-300">V: {idCard}</span>
+
                 </div>
             </div>
         </div>

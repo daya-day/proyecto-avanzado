@@ -68,6 +68,8 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                     <div className="md:w-2/3 space-y-4">
                         
                         <div className="grid grid-cols-3 gap-4 text-lg">
+                            <StatBox title="Nº" value={`#${card.idCard}`} />
+
                             <StatBox title="Nº" value={`#${card.number}`} />
                             <StatBox title="Tipo" value={card.tipo || 'N/A'} color={card.tipo === 'Psíquico' ? 'bg-purple-700' : 'bg-red-700'} />
                             <StatBox title="Vida" value={card.lifePoints} color="bg-green-600" />
