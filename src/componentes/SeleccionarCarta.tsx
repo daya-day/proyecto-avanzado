@@ -11,107 +11,154 @@ interface SeleccionarCartaProps {
 type BattleStage = 'SELECTION' | 'ARENA';
 
 const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, onCardClick }) => {
-    const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+    const [team1Ids, setTeam1Ids] = useState<string[]>([]);
+    const [team2Ids, setTeam2Ids] = useState<string[]>([]); 
+    
     const [battleStage, setBattleStage] = useState<BattleStage>('SELECTION');
     const [combatLog, setCombatLog] = useState<string[]>([]);
     
-    const [attacker, setAttacker] = useState<CardProps | null>(null);
-    const [defenders, setDefenders] = useState<CardProps[]>([]);
-    const [isAttackingAnimation, setIsAttackingAnimation] = useState(false);
+    const [team1Cards, setTeam1Cards] = useState<CardProps[]>([]);
+    const [team2Cards, setTeam2Cards] = useState<CardProps[]>([]);
+    const [activeAttackerTeam, setActiveAttackerTeam] = useState<1 | 2>(1); // Define quién da el siguiente golpe
 
     const handleToggleSelect = (idCard: string, e: React.MouseEvent) => {
-        e.stopPropagation(); 
-        setSelectedCardIds((prev) => {
-            if (prev.includes(idCard)) {
-                return prev.filter(id => id !== idCard);
-            } else {
-                return [...prev, idCard];
-            }
-        });
+        e.stopPropagation();
+
+        const inTeam1 = team1Ids.includes(idCard);
+        const inTeam2 = team2Ids.includes(idCard);
+
+        if (inTeam1) {
+            setTeam1Ids(prev => prev.filter(id => id !== idCard));
+            return;
+        }
+        if (inTeam2) {
+            setTeam2Ids(prev => prev.filter(id => id !== idCard));
+            return;
+        }
+
+        if (team1Ids.length + team2Ids.length >= 6) return; // Límite absoluto de 6 cartas (3 vs 3)
+
+        if (team1Ids.length <= team2Ids.length && team1Ids.length < 3) {
+            setTeam1Ids(prev => [...prev, idCard]);
+        } else if (team2Ids.length < 3) {
+            setTeam2Ids(prev => [...prev, idCard]);
+        }
     };
 
-    const handleGoToArena = () => {
-        if (selectedCardIds.length < 2) return;
+    const handleStartBattleStage = () => {
+        if (team1Ids.length !== 3 || team2Ids.length !== 3) return;
 
-        const combatientes = cards.filter(card => selectedCardIds.includes(card.idCard));
-        setAttacker(combatientes[0]);
-        setDefenders(combatientes.slice(1));
+        setTeam1Cards(cards.filter(c => team1Ids.includes(c.idCard)));
+        setTeam2Cards(cards.filter(c => team2Ids.includes(c.idCard)));
         
-        setCombatLog([`⚔️ Los combatientes han entrado al Portal. ${combatientes[0].name} se prepara para el asalto.`]);
+        setCombatLog(['⚔️ ¡La Arena de Combate 3 VS 3 se ha abierto! El Equipo 1 inicia con la iniciativa.']);
         setBattleStage('ARENA');
+        setActiveAttackerTeam(1);
     };
 
     const handleExecuteRound = () => {
-        if (!attacker || defenders.length === 0) return;
+        const vivosT1 = team1Cards.filter(c => c.lifePoints > 0);
+        const vivosT2 = team2Cards.filter(c => c.lifePoints > 0);
 
-        setIsAttackingAnimation(true);
-        setTimeout(() => setIsAttackingAnimation(false), 500);
+        if (vivosT1.length === 0 || vivosT2.length === 0) return;
 
         let nuevosLogs: string[] = [];
 
-        const mazoActualizado = cards.map(card => {
-            const esDefensorObjetivo = defenders.some(d => d.idCard === card.idCard && d.lifePoints > 0);
+        if (activeAttackerTeam === 1) {
+            const atacante = vivosT1[0];
+            const objetivo = vivosT2[0];
+
+            const daño = Math.max(15, atacante.attack - objetivo.defense);
             
-            if (esDefensorObjetivo) {
-                const dañoCalculado = attacker.attack - card.defense;
-                const dañoReal = dañoCalculado > 0 ? dañoCalculado : 15;
-                const nuevaVida = card.lifePoints - dañoReal;
+            setTeam2Cards(prev => prev.map(c => {
+                if (c.idCard === objetivo.idCard) {
+                    const nv = c.lifePoints - daño;
+                    return { ...c, lifePoints: nv < 0 ? 0 : nv };
+                }
+                return c;
+            }));
 
-                nuevosLogs.push(`💥 ${attacker.name} arremete contra ${card.name} infligiendo ${dañoReal} de daño.`);
+            setCards(prevGlobal => prevGlobal.map(c => {
+                if (c.idCard === objetivo.idCard) {
+                    const nv = c.lifePoints - daño;
+                    return { ...c, lifePoints: nv < 0 ? 0 : nv };
+                }
+                return c;
+            }));
 
-                return {
-                    ...card,
-                    lifePoints: nuevaVida < 0 ? 0 : nuevaVida
-                };
-            }
-            return card;
-        });
+            nuevosLogs.push(`🔴 [Equipo 1] ${atacante.name} atacó a ${objetivo.name} causando ${daño} de daño.`);
+            setActiveAttackerTeam(2); 
+        } else {
+            const atacante = vivosT2[0];
+            const objetivo = vivosT1[0];
 
-        setDefenders(prev => prev.map(d => {
-            const dañoCalculado = attacker.attack - d.defense;
-            const dañoReal = dañoCalculado > 0 ? dañoCalculado : 15;
-            const nuevaVida = d.lifePoints - dañoReal;
-            return { ...d, lifePoints: nuevaVida < 0 ? 0 : nuevaVida };
-        }));
+            const daño = Math.max(15, atacante.attack - objetivo.defense);
 
-        setCards(mazoActualizado);
+            setTeam1Cards(prev => prev.map(c => {
+                if (c.idCard === objetivo.idCard) {
+                    const nv = c.lifePoints - daño;
+                    return { ...c, lifePoints: nv < 0 ? 0 : nv };
+                }
+                return c;
+            }));
+
+            setCards(prevGlobal => prevGlobal.map(c => {
+                if (c.idCard === objetivo.idCard) {
+                    const nv = c.lifePoints - daño;
+                    return { ...c, lifePoints: nv < 0 ? 0 : nv };
+                }
+                return c;
+            }));
+
+            nuevosLogs.push(`🔵 [Equipo 2] ${atacante.name} contraatacó a ${objetivo.name} causando ${daño} de daño.`);
+            setActiveAttackerTeam(1); // Devuelve el turno
+        }
+
         setCombatLog(prev => [...prev, ...nuevosLogs]);
     };
 
     const handleExitArena = () => {
         setBattleStage('SELECTION');
-        setSelectedCardIds([]);
-        setAttacker(null);
-        setDefenders([]);
+        setTeam1Ids([]);
+        setTeam2Ids([]);
+        setTeam1Cards([]);
+        setTeam2Cards([]);
         setCombatLog([]);
     };
 
+    const totalSeleccionadas = team1Ids.length + team2Ids.length;
 
     if (battleStage === 'SELECTION') {
         return (
             <div className="w-full max-w-7xl mx-auto mb-10 p-6 bg-gray-950/60 backdrop-blur-md rounded-2xl border-2 border-red-600/30 shadow-2xl">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-900/80 p-4 rounded-xl mb-8 border border-gray-800">
+                
+                {/* Cuadro de mando superior */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-900/80 p-5 rounded-xl mb-8 border border-gray-800">
                     <div>
-                        <h2 className="text-xl font-black text-red-500 uppercase tracking-widest">Preparación de Combate</h2>
+                        <h2 className="text-xl font-black text-red-500 uppercase tracking-widest">Estrategia 3 VS 3</h2>
                         <p className="text-xs text-gray-400 mt-1">
-                            Has marcado <span className="text-yellow-400 font-bold">{selectedCardIds.length}</span> {selectedCardIds.length === 1 ? 'carta' : 'cartas'} para enviar al combate.
+                            Las cartas se asignarán una a una a cada bando. Total listas: <span className="text-yellow-400 font-bold">{totalSeleccionadas} / 6</span>
                         </p>
+                        <div className="flex gap-4 mt-2 text-[11px] font-mono">
+                            <span className="text-red-400">🔴 Equipo 1: {team1Ids.length}/3</span>
+                            <span className="text-blue-400">🔵 Equipo 2: {team2Ids.length}/3</span>
+                        </div>
                     </div>
 
-                    <div className="flex gap-2 w-full sm:w-auto justify-end">
-                        {selectedCardIds.length > 0 && (
+                    <div className="flex gap-2 w-full md:w-auto justify-end">
+                        {totalSeleccionadas > 0 && (
                             <button 
-                                onClick={() => setSelectedCardIds([])}
-                                className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs transition uppercase font-bold"
+                                onClick={() => { setTeam1Ids([]); setTeam2Ids([]); }}
+                                className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs transition uppercase font-bold cursor-pointer"
                             >
                                 Limpiar
                             </button>
                         )}
                         <button
-                            onClick={handleGoToArena}
-                            disabled={selectedCardIds.length < 2}
+                            onClick={handleStartBattleStage}
+                            disabled={team1Ids.length !== 3 || team2Ids.length !== 3}
                             className={`px-6 py-2 rounded font-black uppercase tracking-wider text-xs transition-all ${
-                                selectedCardIds.length >= 2
+                                team1Ids.length === 3 && team2Ids.length === 3
                                     ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)] cursor-pointer'
                                     : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'
                             }`}
@@ -123,24 +170,25 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
                 <div className="flex flex-wrap justify-center gap-8">
                     {cards.map((card) => {
-                        const isSelected = selectedCardIds.includes(card.idCard);
+                        const isT1 = team1Ids.includes(card.idCard);
+                        const isT2 = team2Ids.includes(card.idCard);
                         const estaMuerto = card.lifePoints <= 0;
 
                         return (
                             <div key={card.idCard} className="flex flex-col items-center relative">
                                 <button
                                     onClick={(e) => handleToggleSelect(card.idCard, e)}
-                                    disabled={estaMuerto}
-                                    className={`w-full mb-3 py-1.5 px-4 rounded text-xs font-black uppercase tracking-wider transition-all duration-200 border ${
-                                        isSelected
-                                            ? 'bg-yellow-500 text-black border-yellow-400 shadow-[0_0_12px_rgba(234,179,8,0.4)]'
-                                            : 'bg-gray-900 text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white'
+                                    disabled={estaMuerto || (!isT1 && !isT2 && totalSeleccionadas >= 6)}
+                                    className={`w-full mb-3 py-1.5 px-4 rounded text-xs font-black uppercase tracking-wider transition-all border ${
+                                        isT1 ? 'bg-red-600 text-white border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' :
+                                        isT2 ? 'bg-blue-600 text-white border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.4)]' :
+                                        'bg-gray-900 text-gray-400 border-gray-800 hover:border-gray-600 hover:text-white'
                                     } ${estaMuerto ? 'opacity-20 cursor-not-allowed' : 'cursor-pointer'}`}
                                 >
-                                    {isSelected ? '✅ Seleccionada' : '⚔️ Seleccionar'}
+                                    {isT1 ? '🔴 Equipo 1' : isT2 ? '🔵 Equipo 2' : '⚔️ Reclutar'}
                                 </button>
 
-                                <div className={`transition duration-300 ${isSelected ? 'scale-102 ring-2 ring-yellow-500 rounded-xl' : ''} ${estaMuerto ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+                                <div className={`transition duration-300 ${isT1 ? 'ring-2 ring-red-500 rounded-xl' : isT2 ? 'ring-2 ring-blue-500 rounded-xl' : ''} ${estaMuerto ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
                                     <CardDetail {...card} onCardClick={onCardClick} />
                                 </div>
 
@@ -157,78 +205,81 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         );
     }
 
+    const t1Vivos = team1Cards.filter(c => c.lifePoints > 0).length;
+    const t2Vivos = team2Cards.filter(c => c.lifePoints > 0).length;
+
     return (
-        <div className="w-full max-w-7xl mx-auto mb-10 p-6 bg-gradient-to-br from-gray-900 via-purple-950 to-black rounded-3xl border-2 border-red-700 shadow-[0_0_40px_rgba(220,38,38,0.2)]">
+        <div className="w-full max-w-7xl mx-auto mb-10 p-6 bg-gradient-to-br from-gray-950 via-purple-950 to-black rounded-3xl border-2 border-red-700 shadow-[0_0_40px_rgba(220,38,38,0.2)]">
             
             <div className="flex justify-between items-center border-b border-red-900/40 pb-4 mb-8">
                 <div>
-                    <span className="text-xs font-bold text-red-500 tracking-widest uppercase block">Fase Activa</span>
-                    <h2 className="text-3xl font-black uppercase tracking-tighter text-white drop-shadow-[0_2px_10px_rgba(220,38,38,0.5)]">
-                        ¡El Upside Down Colisiona!
-                    </h2>
+                    <span className="text-xs font-bold text-yellow-500 tracking-widest uppercase block">Enfrentamiento de Facciones</span>
+                    <h2 className="text-2xl font-black uppercase tracking-wider text-white">Guerra del Portal</h2>
                 </div>
                 <button 
                     onClick={handleExitArena}
                     className="px-4 py-2 bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 rounded-lg text-xs font-bold uppercase tracking-wider transition cursor-pointer"
                 >
-                    🏳️ Retirarse / Volver
+                    🏳️ Terminar Batalla
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8">
                 
-                <div className="lg:col-span-4 flex flex-col items-center bg-red-950/20 p-6 rounded-2xl border border-red-500/20">
-                    <h3 className="text-sm font-black text-red-400 uppercase tracking-widest mb-4">Líder del Ataque</h3>
-                    {attacker && (
-                        <div className={`transform transition-transform duration-150 ${isAttackingAnimation ? 'translate-x-12 scale-110 z-10' : ''}`}>
-                            <CardDetail {...attacker} onCardClick={() => {}} />
-                            <div className="mt-4 w-full bg-gray-800 rounded-full h-2.5 overflow-hidden border border-gray-700">
-                                <div className="bg-green-500 h-2.5 rounded-full transition-all duration-300" style={{ width: '100%' }}></div>
-                            </div>
-                            <p className="text-center text-[11px] font-bold text-gray-400 mt-1">Vida intacta en Arena</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="lg:col-span-4 flex flex-col items-center justify-center gap-4 text-center">
-                    <span className="text-6xl font-black text-red-600 tracking-tighter italic drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] animate-pulse">
-                        VS
-                    </span>
-                    
-                    {defenders.some(d => d.lifePoints > 0) ? (
-                        <button
-                            onClick={handleExecuteRound}
-                            className="w-full max-w-[200px] bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-black uppercase tracking-widest text-sm shadow-[0_0_25px_rgba(220,38,38,0.6)] active:scale-95 transition-all cursor-pointer"
-                        >
-                            ⚡ ¡ATACAR!
-                        </button>
-                    ) : (
-                        <div className="bg-yellow-600/20 border border-yellow-500 text-yellow-400 p-3 rounded-xl text-xs font-bold uppercase tracking-wide">
-                            🏆 ¡Victoria Absoluta!
-                        </div>
-                    )}
-                </div>
-
-                <div className="lg:col-span-4 flex flex-col items-center bg-blue-950/20 p-6 rounded-2xl border border-blue-500/20">
-                    <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest mb-4">Línea Defensiva</h3>
-                    <div className="flex flex-wrap justify-center gap-4">
-                        {defenders.map((defender) => {
-                            const estaMuertoEnArena = defender.lifePoints <= 0;
-                            const porcentajeVida = Math.max(0, (defender.lifePoints / 150) * 100); 
-
+                <div className="lg:col-span-5 flex flex-col items-center bg-red-950/10 p-4 rounded-2xl border border-red-500/20">
+                    <h3 className="text-xs font-black text-red-400 uppercase tracking-widest mb-4">🔴 EQUIPO HAWKINS</h3>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        {team1Cards.map((card) => {
+                            const muerto = card.lifePoints <= 0;
+                            const pct = Math.max(0, (card.lifePoints / 150) * 100);
                             return (
-                                <div key={defender.idCard} className={`flex flex-col items-center transition-all ${estaMuertoEnArena ? 'opacity-30 grayscale' : ''}`}>
-                                    <div className="scale-90 pointer-events-none">
-                                        <CardDetail {...defender} onCardClick={() => {}} />
+                                <div key={card.idCard} className={`flex flex-col items-center scale-90 ${muerto ? 'opacity-25 grayscale' : ''}`}>
+                                    <CardDetail {...card} onCardClick={() => {}} />
+                                    <div className="w-28 bg-gray-800 rounded-full h-1.5 mt-2 overflow-hidden">
+                                        <div className="bg-red-500 h-1.5 rounded-full transition-all" style={{ width: `${muerto ? 0 : pct}%` }}></div>
                                     </div>
-                                    
-                                    <div className="w-32 bg-gray-800 rounded-full h-2 mt-2 overflow-hidden border border-gray-700">
-                                        <div 
-                                            className={`h-2 rounded-full transition-all duration-300 ${porcentajeVida > 40 ? 'bg-red-500' : 'bg-orange-600'}`} 
-                                            style={{ width: `${estaMuertoEnArena ? 0 : porcentajeVida}%` }}
-                                        ></div>
+                                    <span className="text-[9px] font-mono mt-0.5 text-gray-400">PV: {card.lifePoints}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="lg:col-span-2 flex flex-col items-center justify-center text-center py-4">
+                    <span className="text-4xl font-black text-gray-600 italic mb-2">VS</span>
+                    
+                    {t1Vivos > 0 && t2Vivos > 0 ? (
+                        <div className="w-full flex flex-col items-center gap-2">
+                            <button
+                                onClick={handleExecuteRound}
+                                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-3 px-4 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg transition transform active:scale-95 cursor-pointer"
+                            >
+                                ⚡ Ejecutar Turno
+                            </button>
+                            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+                                Ataca: <b className={activeAttackerTeam === 1 ? 'text-red-400' : 'text-blue-400'}>Equipo {activeAttackerTeam}</b>
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="bg-green-600/20 border border-green-500 text-green-400 p-3 rounded-xl text-xs font-bold uppercase">
+                            🏆 ¡Fin de la Pelea!
+                        </div>
+                    )}
+                </div>
+
+                <div className="lg:col-span-5 flex flex-col items-center bg-blue-950/10 p-4 rounded-2xl border border-blue-500/20">
+                    <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest mb-4">🔵 EQUIPO UPSIDE DOWN</h3>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        {team2Cards.map((card) => {
+                            const muerto = card.lifePoints <= 0;
+                            const pct = Math.max(0, (card.lifePoints / 150) * 100);
+                            return (
+                                <div key={card.idCard} className={`flex flex-col items-center scale-90 ${muerto ? 'opacity-25 grayscale' : ''}`}>
+                                    <CardDetail {...card} onCardClick={() => {}} />
+                                    <div className="w-28 bg-gray-800 rounded-full h-1.5 mt-2 overflow-hidden">
+                                        <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${muerto ? 0 : pct}%` }}></div>
                                     </div>
-                                    <span className="text-[10px] font-mono text-gray-400 mt-1">PV: {defender.lifePoints}</span>
+                                    <span className="text-[9px] font-mono mt-0.5 text-gray-400">PV: {card.lifePoints}</span>
                                 </div>
                             );
                         })}
@@ -237,13 +288,11 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
             </div>
 
-            <div className="bg-black/80 rounded-xl p-4 border border-purple-900/40 font-mono text-xs max-h-[160px] overflow-y-auto shadow-inner">
-                <p className="text-purple-400 font-bold mb-2 border-b border-purple-900/30 pb-1">📜 BITÁCORA DEL PORTAL:</p>
-                <div className="flex flex-col gap-1.5">
+            <div className="bg-black/80 rounded-xl p-4 border border-purple-900/40 font-mono text-xs max-h-[140px] overflow-y-auto">
+                <p className="text-purple-400 font-bold mb-1 border-b border-purple-900/20 pb-1">📜 REGISTROS DEL COMBATE:</p>
+                <div className="flex flex-col gap-1">
                     {combatLog.map((log, index) => (
-                        <p key={index} className="text-gray-300">
-                            {log}
-                        </p>
+                        <p key={index} className="text-gray-300">{log}</p>
                     ))}
                 </div>
             </div>
