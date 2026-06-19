@@ -20,6 +20,7 @@ const initialFormState: NewCardData = {
     description: '',
     pictureUrl: '',
     lifePoints: 100,
+    mana: 300, 
     number: 0,
     idCard: ''
 };
@@ -32,13 +33,17 @@ const CardForm: React.FC<CardFormProps> = ({
     initialData
 }) => {
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState<any>(initialFormState);
 
     useEffect(() => {
         if (isEditing && initialData) {
-            setFormData(initialData);
+          
+            setFormData({
+                ...initialData,
+                mana: initialData.mana !== undefined ? initialData.mana : 300
+            });
         } else {
             setFormData(initialFormState);
         }
@@ -49,7 +54,6 @@ const CardForm: React.FC<CardFormProps> = ({
 
         setFormData((prev: any) => ({
             ...prev,
-
             [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
         }));
     };
@@ -69,7 +73,6 @@ const CardForm: React.FC<CardFormProps> = ({
         }
 
         if (isEditing) {
-
             let urlAPI = `https://educapi-v2.onrender.com/card/${initialData!.idCard}`;
 
             const respuesta = await fetch(urlAPI, {
@@ -78,24 +81,21 @@ const CardForm: React.FC<CardFormProps> = ({
                     usersecretpasskey: 'Daya646842NA',
                     'content-type': 'application/json',
                 },
-
                 body: JSON.stringify({
                     name: formData.name,
                     description: formData.description,
                     attack: formData.attack,
                     defense: formData.defense,
                     lifePoints: formData.lifePoints,
+                    mana: formData.mana, 
                     pictureUrl: formData.pictureUrl,
                     tipo: formData.tipo
                 })
-
             });
 
             console.log(respuesta);
-
         }
         else {
-
             let urlAPI = 'https://educapi-v2.onrender.com/card';
 
             const respuesta = await fetch(urlAPI, {
@@ -104,24 +104,22 @@ const CardForm: React.FC<CardFormProps> = ({
                     usersecretpasskey: 'Daya646842NA',
                     'content-type': 'application/json',
                 },
-
                 body: JSON.stringify({
                     name: formData.name,
                     description: formData.description,
                     attack: formData.attack,
                     defense: formData.defense,
                     lifePoints: formData.lifePoints,
+                    mana: formData.mana, 
                     pictureUrl: formData.pictureUrl,
                     tipo: formData.tipo
                 })
-
             });
 
             console.log(respuesta);
         }
 
         navigate('/');
-
     };
 
     return (
@@ -155,35 +153,47 @@ const CardForm: React.FC<CardFormProps> = ({
                         />
                     </label>
 
-                    <div className="flex gap-4">
-                        <label className="block w-1/3">
-                            <span className="text-red-300 font-semibold">Ataque:</span>
+                    {}
+                    <div className="flex gap-2.5">
+                        <label className="block w-1/4">
+                            <span className="text-red-300 font-semibold text-xs md:text-sm">Ataque:</span>
                             <input
                                 type="number"
                                 name="attack"
                                 value={formData.attack}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
+                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 text-sm"
                             />
                         </label>
-                        <label className="block w-1/3">
-                            <span className="text-blue-300 font-semibold">Defensa:</span>
+                        <label className="block w-1/4">
+                            <span className="text-blue-300 font-semibold text-xs md:text-sm">Defensa:</span>
                             <input
                                 type="number"
                                 name="defense"
                                 value={formData.defense}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
+                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 text-sm"
                             />
                         </label>
-                        <label className="block w-1/3">
-                            <span className="text-green-300 font-semibold">Vida:</span>
+                        <label className="block w-1/4">
+                            <span className="text-green-300 font-semibold text-xs md:text-sm">Vida:</span>
                             <input
                                 type="number"
                                 name="lifePoints"
                                 value={formData.lifePoints}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
+                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 text-sm"
+                            />
+                        </label>
+                        {/* Nuevo Input de Maná */}
+                        <label className="block w-1/4">
+                            <span className="text-purple-300 font-semibold text-xs md:text-sm">Maná:</span>
+                            <input
+                                type="number"
+                                name="mana"
+                                value={formData.mana}
+                                onChange={handleChange}
+                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2 text-sm"
                             />
                         </label>
                     </div>
@@ -198,8 +208,6 @@ const CardForm: React.FC<CardFormProps> = ({
                             className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white p-2"
                         ></textarea>
                     </label>
-
-                    
 
                     <div className="flex justify-end gap-3 pt-4">
                         <button type="button" onClick={onCancel} className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700">

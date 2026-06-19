@@ -1,4 +1,4 @@
- import React from 'react';
+import React from 'react';
 import type { CardProps } from './Card'; 
 
 interface CardDetailProps extends CardProps {
@@ -6,10 +6,9 @@ interface CardDetailProps extends CardProps {
 }
 
 const CardDetail: React.FC<CardDetailProps> = (props) => {
-    const { idCard, name, tipo, attack, defense, lifePoints, pictureUrl, number, onCardClick, ...rest } = props;
-    console.log(props);
+   
+    const { idCard, name, tipo, attack, defense, lifePoints, mana, pictureUrl, number, onCardClick, ...rest } = props;
     
-
     const getTipoColor = (cardTipo: string) => {
         switch (cardTipo) {
             case 'Psíquico': return 'border-purple-500 shadow-purple-900/50';
@@ -30,7 +29,8 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
         }
     };
 
-    const cardData: CardProps = { idCard, name, tipo, attack, defense, lifePoints, pictureUrl, number, ...rest };
+    
+    const cardData: CardProps = { idCard, name, tipo, attack, defense, lifePoints, mana, pictureUrl, number, ...rest };
 
     return (
         <div 
@@ -44,7 +44,6 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
                 #{number} - {tipo}
             </div>
             
-            
             <div className="p-1">
                 <img 
                     src={pictureUrl} 
@@ -54,17 +53,24 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
             </div>
 
             <div className="p-3">
-                
                 <h3 className="text-lg md:text-xl font-extrabold truncate text-red-400 mb-2">
                     {name}
                 </h3>
             
-                <div className="flex justify-between text-xs md:text-sm font-medium">
-                    <span className="text-red-300">A: {attack}</span>
-                    <span className="text-blue-300">D: {defense}</span>
-                    <span className="text-green-300">V: {lifePoints}</span>
-                    <span className="text-green-300">V: {idCard}</span>
-
+                <div className="grid grid-cols-4 gap-1 text-center text-[11px] md:text-xs font-black uppercase">
+                    <div className="bg-red-950/40 text-red-400 p-1 rounded border border-red-900/30">
+                        A: {attack}
+                    </div>
+                    <div className="bg-blue-950/40 text-blue-400 p-1 rounded border border-blue-900/30">
+                        D: {defense}
+                    </div>
+                    <div className="bg-green-950/40 text-green-400 p-1 rounded border border-green-900/30">
+                        V: {lifePoints}
+                    </div>
+                    {}
+                    <div className="bg-purple-950/40 text-purple-400 p-1 rounded border border-purple-900/30">
+                        M: {mana !== undefined ? mana : 300}
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,4 +78,3 @@ const CardDetail: React.FC<CardDetailProps> = (props) => {
 };
 
 export default CardDetail;
-

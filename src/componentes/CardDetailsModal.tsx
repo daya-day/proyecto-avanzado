@@ -1,5 +1,6 @@
 import React from 'react';
 import type { CardProps } from './Card'; 
+
 interface ModalProps {
     card: CardProps | null;
     onClose: () => void;
@@ -8,9 +9,9 @@ interface ModalProps {
 }
 
 const StatBox = ({ title, value, color = 'bg-gray-700', large = false }: { title: string, value: string | number, color?: string, large?: boolean }) => (
-    <div className={`p-4 rounded-lg shadow-inner ${color}`}>
-        <p className="text-sm font-light text-gray-300">{title}</p>
-        <p className={`font-extrabold ${large ? 'text-3xl' : 'text-xl'}`}>{value}</p>
+    <div className={`p-4 rounded-lg shadow-inner ${color} flex flex-col justify-center items-center text-center`}>
+        <p className="text-sm font-light text-gray-200/80 uppercase tracking-wider">{title}</p>
+        <p className={`font-extrabold ${large ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'}`}>{value}</p>
     </div>
 );
 
@@ -21,6 +22,8 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
         switch (tipo) {
             case 'Psíquico': return 'bg-purple-900 border-purple-500';
             case 'Carnívoro': return 'bg-red-900 border-red-500';
+            case 'Humano': return 'bg-yellow-900 border-yellow-500';
+            case 'Mágico': return 'bg-blue-900 border-blue-500';
             default: return 'bg-gray-800 border-gray-400';
         }
     }
@@ -32,7 +35,6 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
         }
     }
 
-    
     const handleEditClick = () => {
         onEdit(card); 
     }
@@ -41,7 +43,7 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
             
             <div 
-                className={`w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl p-8 text-white ${getTipoColor(card.tipo)} border-8 overflow-y-auto relative`}
+                className={`w-full max-w-4xl max-h-[90vh] rounded-xl shadow-2xl p-6 md:p-8 text-white ${getTipoColor(card.tipo)} border-8 overflow-y-auto relative`}
                 onClick={(e) => e.stopPropagation()}
             >
                 
@@ -52,8 +54,7 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                     &times;
                 </button>
                 
-                <h2 className="text-4xl font-extrabold mb-6 border-b pb-2 text-yellow-300 uppercase">{card.name}</h2>
-                
+                <h2 className="text-3xl md:text-4xl font-extrabold mb-6 border-b pb-2 text-yellow-300 uppercase tracking-wide">{card.name}</h2>
                 
                 <div className="flex flex-col md:flex-row gap-8">
                 
@@ -61,25 +62,37 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                         <img 
                             src={card.pictureUrl} 
                             alt={card.name} 
-                            className="w-full h-auto object-cover rounded-lg border-4 border-white shadow-xl"
+                            className="w-full max-w-xs md:max-w-full h-auto object-cover rounded-lg border-4 border-white shadow-xl"
                         />
                     </div>
                     
                     <div className="md:w-2/3 space-y-4">
                         
-                        <div className="grid grid-cols-3 gap-4 text-lg">
-                            <StatBox title="Nº" value={`#${card.idCard}`} />
-
-                            <StatBox title="Nº" value={`#${card.number}`} />
-                            <StatBox title="Tipo" value={card.tipo || 'N/A'} color={card.tipo === 'Psíquico' ? 'bg-purple-700' : 'bg-red-700'} />
-                            <StatBox title="Vida" value={card.lifePoints} color="bg-green-600" />
-                            <StatBox title="Ataque" value={card.attack} color="bg-red-600" large />
-                            <StatBox title="Defensa" value={card.defense} color="bg-blue-600" large />
-
+                        {}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-lg">
+                            <StatBox title="Nº Card" value={`#${card.number}`} color="bg-gray-900/50" />
+                            <StatBox 
+                                title="Tipo" 
+                                value={card.tipo || 'N/A'} 
+                                color={
+                                    card.tipo === 'Psíquico' ? 'bg-purple-700/60' : 
+                                    card.tipo === 'Carnívoro' ? 'bg-red-700/60' : 
+                                    card.tipo === 'Humano' ? 'bg-yellow-700/60' : 
+                                    card.tipo === 'Mágico' ? 'bg-blue-700/60' : 'bg-gray-700/60'
+                                } 
+                            />
+                            <StatBox title="Vida" value={card.lifePoints} color="bg-green-600/80" />
+                            {}
+                            <StatBox title="Maná" value={card.mana !== undefined ? card.mana : 300} color="bg-purple-600/80" />
+                            
+                            <div className="col-span-2 grid grid-cols-2 gap-4">
+                                <StatBox title="Ataque" value={card.attack} color="bg-red-600" large />
+                                <StatBox title="Defensa" value={card.defense} color="bg-blue-600" large />
+                            </div>
                         </div>
 
                         <div>
-                            <h3 className="text-2xl font-bold mt-6 mb-2 border-t pt-4 border-gray-600">
+                            <h3 className="text-xl md:text-2xl font-bold mt-6 mb-2 border-t pt-4 border-gray-400/40">
                                 Descripción
                             </h3>
                             <p className="text-base leading-relaxed italic text-gray-200">
@@ -87,19 +100,18 @@ const CardDetailsModal: React.FC<ModalProps> = ({ card, onClose, onDelete, onEdi
                             </p>
                         </div>
 
-
                         <div className="pt-6 flex gap-4">
                             <button 
                                 onClick={handleEditClick}
                                 className="w-1/2 bg-blue-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-blue-700 transition duration-200 shadow-md"
                             >
-                                ✏️ Editar Carta
+                                 Editar Carta
                             </button>
                             <button 
                                 onClick={handleDeleteClick}
                                 className="w-1/2 bg-red-600 text-white px-4 py-2 rounded text-lg font-bold hover:bg-red-700 transition duration-200 shadow-md"
                             >
-                                🗑️ Eliminar Carta
+                                 Eliminar Carta
                             </button>
                         </div>
                     </div>

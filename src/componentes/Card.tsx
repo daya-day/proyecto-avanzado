@@ -6,6 +6,7 @@ export interface CardProps {
     attack: number;
     defense: number;
     lifePoints: number;
+    mana?: number;
     description: string;
     pictureUrl: string;
 }
