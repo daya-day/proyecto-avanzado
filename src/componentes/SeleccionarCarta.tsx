@@ -28,7 +28,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
     
     const [team1Cards, setTeam1Cards] = useState<CardWithRol[]>([]);
     const [team2Cards, setTeam2Cards] = useState<CardWithRol[]>([]);
-    const [activeAttackerTeam, setActiveAttackerTeam] = useState<1 | 2>(1); // Define quién da el siguiente golpe
+    const [activeAttackerTeam, setActiveAttackerTeam] = useState<1 | 2>(1); 
 
     const [modalConfig, setModalConfig] = useState<{ carta: CardProps; equipoDestino: 1 | 2 } | null>(null);
 
@@ -89,7 +89,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             setTeam2Roles(prev => ({ ...prev, [carta.idCard]: rol }));
         }
 
-        // Cerramos el modal
         setModalConfig(null);
     };
 
@@ -125,6 +124,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         const atacante = vivosAtacantes[0];
         const objetivo = vivosDefensores[0];
 
+        // Lógica de Apoyo (Curación)
         escuadraAtacante = escuadraAtacante.map(aliado => {
             if (aliado.idCard === atacante.idCard && aliado.rolAsignado === 'Apoyo' && aliado.mana >= 60) {
                 aliado.mana -= 60;
@@ -140,17 +140,16 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         });
 
         const atacanteActualizado = escuadraAtacante.find(c => c.idCard === atacante.idCard)!;
-
         let dañoFinal = Math.max(15, atacanteActualizado.attack - objetivo.defense);
 
-        
+        // Lógica de Atacante (Crítico)
         if (atacanteActualizado.rolAsignado === 'Atacante' && atacanteActualizado.mana >= 50) {
             atacanteActualizado.mana -= 50;
             dañoFinal = dañoFinal * 2;
             nuevosLogs.push(`⚔️ [Pasiva] ¡Atacante ${atacanteActualizado.name} desató un Golpe Crítico x2! (-50 MP).`);
         }
 
-       
+        // Lógica de Defensor (Escudo)
         escuadraDefensora = escuadraDefensora.map(defensor => {
             if (defensor.idCard === objetivo.idCard) {
                 if (defensor.rolAsignado === 'Defensor' && defensor.mana >= 40) {
@@ -165,7 +164,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             return defensor;
         });
 
-     
         const colorBando = activeAttackerTeam === 1 ? '🔴 [Equipo 1]' : '🔵 [Equipo 2]';
         nuevosLogs.push(`${colorBando} ${atacanteActualizado.name} causó ${dañoFinal} de daño final a ${objetivo.name}.`);
 
@@ -179,7 +177,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             setActiveAttackerTeam(1); 
         }
 
-        
+        // Sincronizar con el estado global de cartas
         setCards(prevGlobal => prevGlobal.map(globalCard => {
             const dañoEncontrado = escuadraDefensora.find(d => d.idCard === globalCard.idCard);
             if (dañoEncontrado) return { ...globalCard, lifePoints: dañoEncontrado.lifePoints };
@@ -204,17 +202,14 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
     const totalSeleccionadas = team1Ids.length + team2Ids.length;
 
-   
     const rolesOcupados = modalConfig 
         ? Object.values(modalConfig.equipoDestino === 1 ? team1Roles : team2Roles)
         : [];
 
-    
     if (battleStage === 'SELECTION') {
         return (
             <div className="w-full max-w-7xl mx-auto mb-10 p-6 bg-gray-950/60 backdrop-blur-md rounded-2xl border-2 border-red-600/30 shadow-2xl">
                 
-                {}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-900/80 p-5 rounded-xl mb-8 border border-gray-800">
                     <div>
                         <h2 className="text-xl font-black text-red-500 uppercase tracking-widest">Estrategia 3 VS 3</h2>
@@ -250,7 +245,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                     </div>
                 </div>
 
-                {}
                 <div className="flex flex-wrap justify-center gap-8">
                     {cards.map((card) => {
                         const isT1 = team1Ids.includes(card.idCard);
@@ -286,7 +280,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                     })}
                 </div>
 
-                {}
                 {modalConfig && (
                     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
                         <div className="bg-gray-900 border-4 border-yellow-500 p-6 rounded-xl max-w-sm w-full text-center shadow-2xl">
@@ -307,7 +300,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                                     onClick={() => handleConfirmarRol('Atacante')}
                                     className={`w-full font-bold py-2 rounded transition uppercase tracking-wide border ${
                                         rolesOcupados.includes('Atacante')
-                                            ? 'bg-gray-850 text-gray-600 border-gray-800 opacity-40 cursor-not-allowed'
+                                            ? 'bg-gray-800 text-gray-600 border-gray-800 opacity-40 cursor-not-allowed'
                                             : 'bg-red-600 hover:bg-red-700 text-white border-red-500 cursor-pointer'
                                     }`}
                                 >
@@ -320,7 +313,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                                     onClick={() => handleConfirmarRol('Defensor')}
                                     className={`w-full font-bold py-2 rounded transition uppercase tracking-wide border ${
                                         rolesOcupados.includes('Defensor')
-                                            ? 'bg-gray-850 text-gray-600 border-gray-800 opacity-40 cursor-not-allowed'
+                                            ? 'bg-gray-800 text-gray-600 border-gray-800 opacity-40 cursor-not-allowed'
                                             : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500 cursor-pointer'
                                     }`}
                                 >
@@ -333,7 +326,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                                     onClick={() => handleConfirmarRol('Apoyo')}
                                     className={`w-full font-bold py-2 rounded transition uppercase tracking-wide border ${
                                         rolesOcupados.includes('Apoyo')
-                                            ? 'bg-gray-850 text-gray-600 border-gray-800 opacity-40 cursor-not-allowed'
+                                            ? 'bg-gray-800 text-gray-600 border-gray-800 opacity-40 cursor-not-allowed'
                                             : 'bg-green-600 hover:bg-green-700 text-white border-green-500 cursor-pointer'
                                     }`}
                                 >
@@ -356,14 +349,12 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         );
     }
 
-  
     const t1Vivos = team1Cards.filter(c => c.lifePoints > 0).length;
     const t2Vivos = team2Cards.filter(c => c.lifePoints > 0).length;
 
     return (
         <div className="w-full max-w-7xl mx-auto mb-10 p-6 bg-gradient-to-br from-gray-950 via-purple-950 to-black rounded-3xl border-2 border-red-700 shadow-[0_0_40px_rgba(220,38,38,0.2)]">
             
-            {}
             <div className="flex justify-between items-center border-b border-red-900/40 pb-4 mb-8">
                 <div>
                     <span className="text-xs font-bold text-yellow-500 tracking-widest uppercase block">Enfrentamiento de Facciones</span>
@@ -377,10 +368,9 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                 </button>
             </div>
 
-            {}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center mb-8">
                 
-                {}
+                {/* EQUIPO 1 */}
                 <div className="lg:col-span-5 flex flex-col items-center bg-red-950/10 p-4 rounded-2xl border border-red-500/20">
                     <h3 className="text-xs font-black text-red-400 uppercase tracking-widest mb-4">🔴 EQUIPO HAWKINS</h3>
                     <div className="flex flex-wrap justify-center gap-3">
@@ -395,13 +385,11 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                                     </div>
                                     <CardDetail {...card} onCardClick={() => {}} />
                                     
-                                    {}
                                     <div className="w-28 bg-gray-800 rounded-full h-1.5 mt-2 overflow-hidden">
                                         <div className="bg-red-500 h-1.5 rounded-full transition-all" style={{ width: `${muerto ? 0 : pctVida}%` }}></div>
                                     </div>
                                     <span className="text-[9px] font-mono text-gray-400">PV: {card.lifePoints}</span>
 
-                                    {}
                                     <div className="w-28 bg-gray-850 rounded-full h-1.5 mt-1 overflow-hidden border border-gray-800">
                                         <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${muerto ? 0 : pctMana}%` }}></div>
                                     </div>
@@ -412,7 +400,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                     </div>
                 </div>
 
-                {}
+                {/* CONTROL VS */}
                 <div className="lg:col-span-2 flex flex-col items-center justify-center text-center py-4">
                     <span className="text-4xl font-black text-gray-600 italic mb-2">VS</span>
                     
@@ -424,7 +412,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                             >
                                 ⚡ Ejecutar Turno
                             </button>
-                            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+                            <span className="text-[10px] font-mono text-gray-400 tracking-wider uppercase">
                                 Ataca: <b className={activeAttackerTeam === 1 ? 'text-red-400' : 'text-blue-400'}>Equipo {activeAttackerTeam}</b>
                             </span>
                         </div>
@@ -435,7 +423,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                     )}
                 </div>
 
-                {}
+                {/* EQUIPO 2 */}
                 <div className="lg:col-span-5 flex flex-col items-center bg-blue-950/10 p-4 rounded-2xl border border-blue-500/20">
                     <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest mb-4">🔵 EQUIPO UPSIDE DOWN</h3>
                     <div className="flex flex-wrap justify-center gap-3">
@@ -450,13 +438,11 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                                     </div>
                                     <CardDetail {...card} onCardClick={() => {}} />
                                     
-                                    {}
                                     <div className="w-28 bg-gray-800 rounded-full h-1.5 mt-2 overflow-hidden">
                                         <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${muerto ? 0 : pctVida}%` }}></div>
                                     </div>
                                     <span className="text-[9px] font-mono text-gray-400">PV: {card.lifePoints}</span>
 
-                                    {}
                                     <div className="w-28 bg-gray-850 rounded-full h-1.5 mt-1 overflow-hidden border border-gray-800">
                                         <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${muerto ? 0 : pctMana}%` }}></div>
                                     </div>
@@ -469,7 +455,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
             </div>
 
-            {}
+            {/* LOGS */}
             <div className="bg-black/80 rounded-xl p-4 border border-purple-900/40 font-mono text-xs max-h-[140px] overflow-y-auto">
                 <p className="text-purple-400 font-bold mb-1 border-b border-purple-900/20 pb-1">📜 REGISTROS DEL COMBATE:</p>
                 <div className="flex flex-col gap-1">
