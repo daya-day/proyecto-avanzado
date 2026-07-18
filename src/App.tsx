@@ -4,7 +4,6 @@ import type { CardProps } from './componentes/Card';
 import { Route, Routes } from "react-router";
 import AppV2 from './componentes/AppV2';
 
-
 const initialCards: CardProps[] = [
     {
         idCard: 'c1',
@@ -53,8 +52,6 @@ function App() {
         getCartas();
     }, []);
 
-
-
     return (
         <Routes>
             <Route path="/" element={<AppV2 cards={cards} setCards={setCards} />} />
@@ -70,7 +67,6 @@ function App() {
             } />
         </Routes>
     )
-
 }
 
-export default App
+export default App;

@@ -29,7 +29,6 @@ interface DadosState {
 }
 
 const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, onCardClick }) => {
-    // --- ESTADOS DE SELECCIÓN ---
     const [team1Ids, setTeam1Ids] = useState<string[]>([]);
     const [team2Ids, setTeam2Ids] = useState<string[]>([]); 
     const [team1Roles, setTeam1Roles] = useState<Record<string, RolCarta>>({});
@@ -37,17 +36,18 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
     const [battleStage, setBattleStage] = useState<BattleStage>('SELECTION');
     const [modalConfig, setModalConfig] = useState<{ carta: CardProps; equipoDestino: 1 | 2 } | null>(null);
 
-    // --- ESTADOS DE LA ARENA ---
+    const [promptIA, setPromptIA] = useState<string>('');
+    const [cargandoIA, setCargandoIA] = useState<boolean>(false);
+    const [errorIA, setErrorIA] = useState<string | null>(null);
+
     const [team1Cards, setTeam1Cards] = useState<CardWithRol[]>([]);
     const [team2Cards, setTeam2Cards] = useState<CardWithRol[]>([]);
     const [combatLog, setCombatLog] = useState<string[]>([]);
     
-    // Control de Turnos Manual
     const [bandoActivo, setBandoActivo] = useState<1 | 2>(1);
     const [idCartaSeleccionada, setIdCartaSeleccionada] = useState<string | null>(null);
     const [accionSeleccionada, setAccionSeleccionada] = useState<AccionTurno>(null);
 
-    // --- ESTADO DE LOS DADOS ---
     const [dadosConfig, setDadosConfig] = useState<DadosState | null>(null);
     const [dadoJugador, setDadoJugador] = useState<number | null>(null);
     const [dadoRival, setDadoRival] = useState<number | null>(null);
@@ -62,7 +62,46 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         }
     }, [combatLog]);
 
-    // --- RECLUTAMIENTO ---
+    const handleGenerarCartaIA = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!promptIA.trim()) return;
+
+        setCargandoIA(true);
+        setErrorIA(null);
+
+        try {
+            const respuesta = await fetch('https://educapi-v2.onrender.com/ai/generate-card', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'usersecretpasskey': 'Daya646842NA'
+                },
+                body: JSON.stringify({
+                    cardPrompt: promptIA,
+                    globalContext: 'Stranger Things universe, D&D Hellfire Club tabletop aesthetic, Hawkins heroes and monsters from the Upside Down.'
+                })
+            });
+
+            if (!respuesta.ok) {
+                throw new Error('Error al invocar los poderes del Upside Down.');
+            }
+
+            const resultado = await respuesta.json();
+            
+            if (resultado && resultado.data) {
+                setCards(prev => [resultado.data, ...prev]);
+                setPromptIA('');
+            } else {
+                throw new Error('Estructura de respuesta inválida.');
+            }
+        } catch (error: any) {
+            setErrorIA(error.message || 'Error de conexión con el laboratorio de Hawkins.');
+        } finally {
+            setCargandoIA(false);
+        }
+    };
+
+    
     const handleToggleSelect = (idCard: string, e: React.MouseEvent) => {
         e.stopPropagation();
         const inTeam1 = team1Ids.includes(idCard);
@@ -189,7 +228,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             }
 
             if (carta.rolAsignado === 'Apoyo') {
-                // CURACIÓN GLOBAL INMEDIATA
                 setCombatLog(prev => [...prev, `🧪 ${carta.name} usa Habilidad de Apoyo: Curación en área de +30 PV.`]);
                 const sanar = (list: CardWithRol[]) => list.map(c => c.lifePoints > 0 ? { ...c, lifePoints: Math.min(c.maxLifePoints, c.lifePoints + 30) } : c);
                 if (bandoActivo === 1) setTeam1Cards(prev => sanar(prev));
@@ -199,48 +237,39 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                 cambiarDeBando();
             } 
             else if (carta.rolAsignado === 'Defensor') {
-                // ESCUDO PROPIO INMEDIATO
                 setCombatLog(prev => [...prev, `🛡️ ${carta.name} usa Habilidad de Defensor: Gana un escudo de +30 PV.`]);
                 actualizarPropiedadCarta(bandoActivo, carta.idCard, { mana: carta.mana - 60, lifePoints: carta.lifePoints + 30, enPosturaDefensiva: true });
                 cambiarDeBando();
             } 
             else if (carta.rolAsignado === 'Atacante') {
-                // ATAQUE ESPECIAL NECESITA SELECCIONAR OBJETIVO
                 setAccionSeleccionada('HABILIDAD_ESPECIAL');
                 setCombatLog(prev => [...prev, `🔥 ${carta.name} prepara su Golpe Potenciado. ¡Selecciona una carta enemiga!`]);
             }
         }
     };
 
-    // --- SELECCIÓN DIRECTA DE OBJETIVO ENEMIGO ---
     const handleSeleccionarObjetivoEnemigo = (victima: CardWithRol) => {
         if (!idCartaSeleccionada || !accionSeleccionada) return;
 
         const misCartas = bandoActivo === 1 ? team1Cards : team2Cards;
         const atacante = misCartas.find(c => c.idCard === idCartaSeleccionada)!;
 
-        // Validar que no esté muerto el rival
         if (victima.lifePoints <= 0) return;
 
-        // Limpiar estados de dados previos
         setDadoJugador(null);
         setDadoRival(null);
         setResultadoDadosTexto('');
         setDadosRodando(false);
 
         if (victima.rolAsignado === 'Defensor' && victima.enPosturaDefensiva) {
-            // Si el rival es un defensor protegiéndose, obliga a tirar dados de Espinas
             setDadosConfig({ tipo: 'DEFENSOR_ESPINAS', atacante, victima, esHabilidad: accionSeleccionada === 'HABILIDAD_ESPECIAL' });
         } else if (accionSeleccionada === 'HABILIDAD_ESPECIAL') {
-            // Si es habilidad de atacante, choque de dados obligatorio
             setDadosConfig({ tipo: 'ATACANTE_ESPECIAL', atacante, victima, esHabilidad: true });
         } else {
-            // Ataque básico normal directo sin dados
             resolverImpactoBatalla(atacante, victima, false, false, 0, false);
         }
     };
 
-    // --- SIMULADOR INTERACTIVO DE DADOS ---
     const lanzarDadosFisicos = () => {
         if (!dadosConfig || dadosRodando) return;
 
@@ -279,7 +308,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         }, 100);
     };
 
-    // --- PROCESAR RESULTADO DEL MODAL DE DADOS ---
     const handleContinuarPostDados = () => {
         if (!dadosConfig || dadoJugador === null) return;
         
@@ -288,7 +316,7 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
         const valRival = dadoRival || 0;
         const ganoJugador = valJugador >= valRival;
 
-        setDadosConfig(null); // Cerrar modal
+        setDadosConfig(null);
 
         if (tipo === 'APOYO_SALVACION') {
             const exito = valJugador >= 11;
@@ -298,7 +326,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
         if (tipo === 'DEFENSOR_ESPINAS') {
             if (ganoJugador) {
-                // Gana el defensor: activa espinas y devuelve el 20% del daño reflejado
                 let dmgOriginal = Math.max(15, atacante.attack - victima.defense);
                 if (esHabilidad) dmgOriginal += 20;
                 const reflejo = Math.floor(dmgOriginal * 0.20);
@@ -306,18 +333,15 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                 setCombatLog(prev => [...prev, `🌵 Pasiva: El escudo de ${victima.name} devuelve ${reflejo} de daño.`]);
                 resolverImpactoBatalla(atacante, victima, esHabilidad, false, reflejo, false);
             } else {
-                // Pierde el defensor: Se le rompe la guardia y queda aturdido
                 setCombatLog(prev => [...prev, `💥 ¡Guardia Rota! ${victima.name} queda ATURDIDO.`]);
                 resolverImpactoBatalla(atacante, victima, esHabilidad, false, 0, true);
             }
         } 
         else if (tipo === 'ATACANTE_ESPECIAL') {
-            // Choque de dados de ataque especial
             resolverImpactoBatalla(atacante, victima, true, ganoJugador, 0, false);
         }
     };
 
-    // --- RESOLUCIÓN FINAL DE DAÑOS EN TABLERO ---
     const resolverImpactoBatalla = (
         atacante: CardWithRol, 
         victima: CardWithRol, 
@@ -345,7 +369,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
         let logs = [`⚔️ ${atacante.name} causa ${dañoCalculado} de daño a ${victima.name}.`];
 
-        // Actualizar atacante (Maná y Estados)
         misCartas = misCartas.map(c => {
             if (c.idCard === atacante.idCard) {
                 let m = c.mana;
@@ -362,7 +385,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             return c;
         });
 
-        // Actualizar víctima
         susCartas = susCartas.map(c => {
             if (c.idCard === victima.idCard) {
                 return { 
@@ -375,12 +397,9 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             return c;
         });
 
-        // REVISAR SI ACTIVAR ÚLTIMO ALIENTO DE APOYO
         if (vidaFinalSus === 0 && victima.rolAsignado === 'Apoyo' && !victima.yaUsoUltimoAliento) {
-            // Congelar juego y abrir modal de salvación
             setCombatLog(prev => [...prev, ...logs, `😇 ¡Último Aliento! Tirada de salvación obligatoria para ${victima.name}.`]);
             
-            // Forzar actualización parcial en memoria para que la tirada lea el estado real
             const victimaModificada = { ...victima, lifePoints: 0, yaUsoUltimoAliento: true };
             const atacanteModificado = misCartas.find(x => x.idCard === atacante.idCard)!;
 
@@ -392,7 +411,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                 esHabilidad: false
             });
             
-            // Guardamos el estado actual antes del dado fatídico
             if (bandoActivo === 1) { setTeam1Cards(misCartas); setTeam2Cards(susCartas); }
             else { setTeam2Cards(misCartas); setTeam1Cards(susCartas); }
             return;
@@ -436,7 +454,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
             setTeam1Cards(sus);
         }
 
-        // Sincronizar vidas globales con el mazo
         setCards(prev => prev.map(c => {
             const match = [...mis, ...sus].find(x => x.idCard === c.idCard);
             return match ? { ...c, lifePoints: match.lifePoints } : c;
@@ -469,6 +486,30 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                         <h2 className="text-xl font-black text-red-500 uppercase tracking-widest">Estrategia D&D 3 VS 3</h2>
                         <p className="text-xs text-gray-400 mt-1">Reclutados: <span className="text-yellow-400 font-bold">{totalSeleccionadas} / 6</span> (1 de cada rol por bando)</p>
                     </div>
+                    
+                    {/* SECCIÓN INTEGRADOR DE IA CON EL MISMO ESTILO EXACTO */}
+                    <form onSubmit={handleGenerarCartaIA} className="flex flex-1 max-w-md w-full items-center gap-2 px-4 py-1 bg-black/40 rounded-lg border border-red-900/30">
+                        <input 
+                            type="text" 
+                            placeholder="Invoca un personaje con IA (ej: Vecna)..." 
+                            value={promptIA}
+                            onChange={(e) => setPromptIA(e.target.value)}
+                            disabled={cargandoIA}
+                            className="bg-transparent text-xs text-white placeholder-gray-500 outline-none w-full py-1.5"
+                        />
+                        <button 
+                            type="submit" 
+                            disabled={cargandoIA || !promptIA.trim()}
+                            className={`px-3 py-1.5 rounded text-[10px] font-mono uppercase tracking-wider font-bold transition ${
+                                cargandoIA || !promptIA.trim() 
+                                ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
+                                : 'bg-purple-700 text-white hover:bg-purple-600 cursor-pointer shadow-[0_0_10px_rgba(126,34,206,0.4)]'
+                            }`}
+                        >
+                            {cargandoIA ? 'Invocando...' : '✨ Invocar'}
+                        </button>
+                    </form>
+
                     <div className="flex gap-2">
                         {totalSeleccionadas > 0 && (
                             <button onClick={() => { setTeam1Ids([]); setTeam2Ids([]); setTeam1Roles({}); setTeam2Roles({}); }} className="px-3 py-2 bg-gray-800 text-gray-300 rounded text-xs uppercase font-bold cursor-pointer">Limpiar</button>
@@ -476,6 +517,13 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                         <button onClick={handleStartBattleStage} disabled={team1Ids.length !== 3 || team2Ids.length !== 3} className={`px-6 py-2 rounded font-black uppercase tracking-wider text-xs ${team1Ids.length === 3 && team2Ids.length === 3 ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)] cursor-pointer' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}>¡Iniciar Combate!</button>
                     </div>
                 </div>
+
+                {/* Mensaje de error de la IA si falla */}
+                {errorIA && (
+                    <div className="mb-6 p-2 bg-red-950/40 border border-red-800 text-red-400 font-mono text-[11px] rounded text-center">
+                        ⚠️ {errorIA}
+                    </div>
+                )}
 
                 <div className="flex flex-wrap justify-center gap-8">
                     {cards.map((card) => {
@@ -571,7 +619,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                     })}
                 </div>
 
-                {/* CENTRO: CONTROLADORES */}
                 <div className="col-span-6 flex flex-col justify-center items-center px-4 bg-gray-950/40 rounded-xl border border-gray-800/40">
                     <div className="text-center w-full max-w-sm bg-gray-900 p-6 rounded-2xl border border-purple-500/30 shadow-xl">
                         <h4 className={`text-sm font-black uppercase mb-4 ${bandoActivo === 1 ? 'text-red-400' : 'text-blue-400'}`}>
@@ -610,7 +657,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                     </div>
                 </div>
 
-                {/* FLANCO DERECHO: EQUIPO 2 (UPSIDE DOWN) */}
                 <div className="col-span-3 flex flex-col justify-start gap-4 p-3 bg-blue-950/10 rounded-xl border border-blue-500/20">
                     <span className="text-[11px] font-black text-blue-400 uppercase text-center block tracking-widest">🔵 UPSIDE DOWN</span>
                     {team2Cards.map((card) => {
@@ -652,7 +698,6 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
 
             </div>
 
-            {/* POPUP DE DADOS REESTRUCTURADO */}
             {dadosConfig && (
                 <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4">
                     <div className="bg-gray-950 border-4 border-purple-600 p-8 rounded-3xl max-w-md w-full text-center shadow-2xl">
@@ -697,12 +742,12 @@ const SeleccionarCarta: React.FC<SeleccionarCartaProps> = ({ cards, setCards, on
                             <button onClick={handleContinuarPostDados} className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-xl uppercase tracking-widest text-xs cursor-pointer">
                                 ⚔️ APLICAR RESULTADO Y SEGUIR
                             </button>
-                        )}
+                        )
+                        }
                     </div>
                 </div>
             )}
 
-            {/* Consola de Historial */}
             <div ref={logContainerRef} className="mt-6 bg-black rounded-xl p-4 border border-purple-900/40 font-mono text-[11px] max-h-[140px] overflow-y-auto">
                 <p className="text-purple-400 font-bold mb-1 border-b border-purple-900/20 pb-1">📜 ACCIONES EN LA ARENA (LOG)</p>
                 <div className="flex flex-col gap-1">
